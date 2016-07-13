@@ -66,7 +66,7 @@ No need to worry about closing the connection.
 
 ### macOS
 
-Install MySQL
+Install PostgreSQL
 
 ```shell
 brew install postgresql
