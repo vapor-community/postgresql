@@ -93,4 +93,8 @@ psql -h dbhost -U username dbname
 
 This wrapper was created to power [Fluent](https://github.com/qutheory/fluent), an ORM for Swift. 
 
+## 👥 Authors
+
+Made by [Prince Ugwuh] a member of Qutheory community.
+
 
