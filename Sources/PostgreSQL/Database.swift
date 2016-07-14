@@ -14,7 +14,6 @@ public enum Error: ErrorProtocol {
 }
 
 public class Database {
-    private(set) var connection: Connection!
     private let host: String 
     private let port: String
     private let dbname: String 
