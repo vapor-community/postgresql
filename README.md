@@ -95,6 +95,6 @@ This wrapper was created to power [Fluent](https://github.com/qutheory/fluent), 
 
 ## 👥 Authors
 
-Made by [Prince Ugwuh] a member of Qutheory community.
+Made by [Prince Ugwuh](https://twitter.com/Prince2k3) a member of Qutheory community.
 
 
