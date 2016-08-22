@@ -87,7 +87,7 @@ class PostgreSQLTests: XCTestCase {
                 XCTFail("Could not get pi result")
             }
 
-            if let result = try postgreSQL.execute("SELECT * FROM parameterization WHERE u = $1", [.int(42)]).first {
+            if let result = try postgreSQL.execute("SELECT * FROM parameterization WHERE u = $1", [.string("42")]).first {
                 XCTAssertEqual(result["d"]?.double, nil)
                 XCTAssertEqual(result["i"]?.int, nil)
                 XCTAssertEqual(result["s"]?.string, "life")
@@ -96,7 +96,7 @@ class PostgreSQLTests: XCTestCase {
                 XCTFail("Could not get life result")
             }
 
-            if let result = try postgreSQL.execute("SELECT * FROM parameterization WHERE i = $1", [.int(-1)]).first {
+            if let result = try postgreSQL.execute("SELECT * FROM parameterization WHERE i = $1", [.string("-1")]).first {
                 XCTAssertEqual(result["d"]?.double, nil)
                 XCTAssertEqual(result["i"]?.int, -1)
                 XCTAssertEqual(result["s"]?.string, "test")

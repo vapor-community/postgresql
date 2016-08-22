@@ -8,7 +8,7 @@ extension PostgreSQL.Database {
                 host: "127.0.0.1",
                 port: "5432",
                 dbname: "test",
-                user: "pugwuh",
+                user: "user_testing",
                 password: ""
                 
             )
@@ -22,7 +22,7 @@ extension PostgreSQL.Database {
             print("Error: \(error)")
             print()
             print("You must configure PostgreSQL to run with the following configuration: ")
-            print("    user: 'root'")
+            print("    user: 'user_testing'")
             print("    password: '' // (empty)")
             print("    host: '127.0.0.1'")
             print("    database: 'test'")
@@ -62,11 +62,4 @@ extension PostgreSQL.Value {
         return double
     }
 
-    var bool: Bool? {
-        guard case .bool(let bool) = self else {
-            return nil
-        }
-
-        return Bool(bool)
-    }
 }
