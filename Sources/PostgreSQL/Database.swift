@@ -4,7 +4,7 @@
     import CPostgreSQLMac
 #endif
 
-public enum Error: ErrorProtocol {
+public enum DatabaseError: Error {
     case cannotEstablishConnection
     case indexOutOfRange
     case columnNotFound
@@ -39,17 +39,17 @@ public class Database {
         }
         
         guard !query.isEmpty else {
-            throw Error.noQuery
+            throw DatabaseError.noQuery
         }
         
         let res: Result.ResultPointer
-        if let values = values where values.count > 0 {
+        if let values = values, values.count > 0 {
             let paramsValues = bind(values)
             res = PQexecParams(internalConnection.connection, query, Int32(values.count), nil, paramsValues, nil, nil, Int32(0))
             
             defer {
                 paramsValues.deinitialize()
-                paramsValues.deallocateCapacity(values.count)
+                paramsValues.deallocate(capacity: values.count)
             }
         } else {
             res = PQexec(internalConnection.connection, query)
@@ -58,11 +58,11 @@ public class Database {
         defer { PQclear(res) }
         switch Status(result: res) {
         case .nonFatalError:
-            throw Error.invalidSQL(message: String(cString: PQresultErrorMessage(res)) ?? "")
+            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) ?? "")
         case .fatalError:
-            throw Error.invalidSQL(message: String(cString: PQresultErrorMessage(res)) ?? "")
+            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) ?? "")
         case .unknown:
-            throw Error.invalidSQL(message: String(cString: PQresultErrorMessage(res)) ?? "An unknown error has occurred")
+            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) ?? "An unknown error has occurred")
         case .tuplesOk:
             return Result(resultPointer: res).dictionary
         default:
@@ -72,8 +72,10 @@ public class Database {
     }
     
     func bind(_ values: [Value]) -> UnsafeMutablePointer<UnsafePointer<Int8>?> {
-        let paramsValues = UnsafeMutablePointer<UnsafePointer<Int8>?>.init(allocatingCapacity: values.count)
-        
+
+
+        let paramsValues = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: values.count)
+
         var v = [[UInt8]]()
         for i in 0..<values.count {
             var ch = [UInt8](values[i].utf8)

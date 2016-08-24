@@ -10,7 +10,7 @@ public final class Connection {
     private(set) var connection: ConnectionPointer!
 
     public var connected: Bool {
-        if let connection = connection where PQstatus(connection) == CONNECTION_OK {
+        if let connection = connection, PQstatus(connection) == CONNECTION_OK {
             return true
         }
         return false
@@ -19,13 +19,13 @@ public final class Connection {
     public init(host: String = "localhost", port: String = "5432", dbname: String, user: String, password: String) throws {
         self.connection = PQconnectdb("host='\(host)' port='\(port)' dbname='\(dbname)' user='\(user)' password='\(password)'")
         if !self.connected {
-            throw Error.cannotEstablishConnection
+            throw DatabaseError.cannotEstablishConnection
         }
     }
 
     public func reset() throws {
         guard self.connected else {
-            throw Error.cannotEstablishConnection
+            throw DatabaseError.cannotEstablishConnection
         }
         
         PQreset(connection)
@@ -33,13 +33,13 @@ public final class Connection {
     
     public func close() throws {
         guard self.connected else {
-            throw Error.cannotEstablishConnection
+            throw DatabaseError.cannotEstablishConnection
         }
         
         PQfinish(connection)
     }
     
     deinit {
-        try! close()
+        try? close()
     }
 }
