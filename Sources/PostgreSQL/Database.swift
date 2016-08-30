@@ -58,11 +58,11 @@ public class Database {
         defer { PQclear(res) }
         switch Status(result: res) {
         case .nonFatalError:
-            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) ?? "")
+            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) )
         case .fatalError:
-            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) ?? "")
+            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) )
         case .unknown:
-            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) ?? "An unknown error has occurred")
+            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) )
         case .tuplesOk:
             return Result(resultPointer: res).dictionary
         default:

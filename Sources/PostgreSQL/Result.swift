@@ -33,7 +33,7 @@ public class Result {
                 if PQgetisnull(self.resultPointer, Int32(row), Int32(column)) == 1 {
                     item[name] = .null
                 } else {
-                    let value = String(cString: PQgetvalue(self.resultPointer, Int32(row), Int32(column))) ?? ""
+                    let value = String(cString: PQgetvalue(self.resultPointer, Int32(row), Int32(column))) 
                     let type = PQftype(self.resultPointer, Int32(column))
                     item[name] = Value(oid: type, value: value)
                     
