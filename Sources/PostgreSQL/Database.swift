@@ -29,7 +29,7 @@ public class Database {
     }
     
     @discardableResult
-    public func execute(_ query: String, _ values: [Value]? = [], on connection: Connection? = nil) throws -> [[String: Value]] {
+    public func execute(_ query: String, _ values: [NodeRepresentable]? = [], on connection: Connection? = nil) throws -> [[String: Node]] {
         let internalConnection: Connection 
 
         if let conn = connection {
@@ -44,7 +44,7 @@ public class Database {
         
         let res: Result.ResultPointer
         if let values = values, values.count > 0 {
-            let paramsValues = bind(values)
+			let paramsValues = bind(try values.map { try $0.makeNode() })
             res = PQexecParams(internalConnection.connection, query, Int32(values.count), nil, paramsValues, nil, nil, Int32(0))
             
             defer {
@@ -58,11 +58,11 @@ public class Database {
         defer { PQclear(res) }
         switch Status(result: res) {
         case .nonFatalError:
-            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) ?? "")
+            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) )
         case .fatalError:
-            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) ?? "")
+            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) )
         case .unknown:
-            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) ?? "An unknown error has occurred")
+            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) )
         case .tuplesOk:
             return Result(resultPointer: res).dictionary
         default:
@@ -71,7 +71,7 @@ public class Database {
         return []
     }
     
-    func bind(_ values: [Value]) -> UnsafeMutablePointer<UnsafePointer<Int8>?> {
+    func bind(_ values: [Node]) -> UnsafeMutablePointer<UnsafePointer<Int8>?> {
 
 
         let paramsValues = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: values.count)
