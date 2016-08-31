@@ -15,7 +15,7 @@ public class Result {
         self.resultPointer = resultPointer
     }
     
-    lazy var dictionary: [[String: Value]] = { [unowned self] in
+    lazy var dictionary: [[String: Node]] = { [unowned self] in
         let rowCount = Int(PQntuples(self.resultPointer))
         let columnCount = Int(PQnfields(self.resultPointer))
         
@@ -23,10 +23,10 @@ public class Result {
             return []
         }
         
-        var parsedData = [[String: Value]]()
+        var parsedData = [[String: Node]]()
         
         for row in 0..<rowCount {
-            var item = [String: Value]()
+            var item = [String: Node]()
             for column in 0..<columnCount {
                 let name = String(cString: PQfname(self.resultPointer, Int32(column)))
                 
@@ -35,7 +35,7 @@ public class Result {
                 } else {
                     let value = String(cString: PQgetvalue(self.resultPointer, Int32(row), Int32(column))) 
                     let type = PQftype(self.resultPointer, Int32(column))
-                    item[name] = Value(oid: type, value: value)
+                    item[name] = Node(oid: type, value: value)
                     
                 }
             }

@@ -36,30 +36,3 @@ extension PostgreSQL.Database {
     }
 }
 
-// Makes fetching values during tests easier
-extension PostgreSQL.Value {
-    var string: String? {
-        guard case .string(let string) = self else {
-            return nil
-        }
-
-        return string
-    }
-
-    var int: Int? {
-        guard case .int(let int) = self else {
-            return nil
-        }
-
-        return int
-    }
-
-    var double: Double? {
-        guard case .double(let double) = self else {
-            return nil
-        }
-
-        return double
-    }
-
-}

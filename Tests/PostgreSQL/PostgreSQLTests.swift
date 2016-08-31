@@ -78,7 +78,7 @@ class PostgreSQLTests: XCTestCase {
             try postgreSQL.execute("INSERT INTO parameterization VALUES (NULL, NULL, 'life', 42)")
             try postgreSQL.execute("INSERT INTO parameterization VALUES (NULL, -1, 'test', NULL)")
 
-            if let result = try postgreSQL.execute("SELECT * FROM parameterization WHERE d = $1", [.string("3.14")]).first {
+            if let result = try postgreSQL.execute("SELECT * FROM parameterization WHERE d = $1", [3.14]).first {
                 XCTAssertEqual(result["d"]?.double, 3.14)
                 XCTAssertEqual(result["i"]?.int, nil)
                 XCTAssertEqual(result["s"]?.string, "pi")
@@ -87,7 +87,7 @@ class PostgreSQLTests: XCTestCase {
                 XCTFail("Could not get pi result")
             }
 
-            if let result = try postgreSQL.execute("SELECT * FROM parameterization WHERE u = $1", [.string("42")]).first {
+            if let result = try postgreSQL.execute("SELECT * FROM parameterization WHERE u = $1", [42]).first {
                 XCTAssertEqual(result["d"]?.double, nil)
                 XCTAssertEqual(result["i"]?.int, nil)
                 XCTAssertEqual(result["s"]?.string, "life")
@@ -96,7 +96,7 @@ class PostgreSQLTests: XCTestCase {
                 XCTFail("Could not get life result")
             }
 
-            if let result = try postgreSQL.execute("SELECT * FROM parameterization WHERE i = $1", [.string("-1")]).first {
+            if let result = try postgreSQL.execute("SELECT * FROM parameterization WHERE i = $1", [-1]).first {
                 XCTAssertEqual(result["d"]?.double, nil)
                 XCTAssertEqual(result["i"]?.int, -1)
                 XCTAssertEqual(result["s"]?.string, "test")
@@ -105,7 +105,7 @@ class PostgreSQLTests: XCTestCase {
                 XCTFail("Could not get test by int result")
             }
 
-            if let result = try postgreSQL.execute("SELECT * FROM parameterization WHERE s = $1", [.string("test")]).first {
+            if let result = try postgreSQL.execute("SELECT * FROM parameterization WHERE s = $1", ["test"]).first {
                 XCTAssertEqual(result["d"]?.double, nil)
                 XCTAssertEqual(result["i"]?.int, -1)
                 XCTAssertEqual(result["s"]?.string, "test")
