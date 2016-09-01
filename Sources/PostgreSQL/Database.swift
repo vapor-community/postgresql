@@ -81,7 +81,7 @@ public class Database {
             var ch = [UInt8](values[i].utf8)
             ch.append(0)
             v.append(ch)
-            paramsValues[i] = UnsafePointer<Int8>(v.last!)
+            paramsValues[i] = UnsafePointer<Int8>(OpaquePointer(v.last!))
         }
         return paramsValues
     }
