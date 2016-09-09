@@ -1,6 +1,10 @@
 os:
   - linux
   - osx
+env:
+  global:
+  - PGPORT=5433
+  - PGHOST=localhost
 language: generic
 sudo: required
 dist: trusty
@@ -10,7 +14,7 @@ services:
 addons:
   postgresql: "9.4"
 before_script:
-  - psql -c 'create database test;' -U postgres
+  - psql -U postgres -c 'create database "test";'
 script:
   - eval "$(curl -sL swift.vapor.sh/ci)"
   - eval "$(curl -sL swift.vapor.sh/codecov)"
