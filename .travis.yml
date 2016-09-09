@@ -3,8 +3,7 @@ os:
   - osx
 env:
   global:
-  - PGPORT=5433
-  - PGHOST=localhost
+  - PGPORT=5432
 language: generic
 sudo: required
 dist: trusty
@@ -12,7 +11,7 @@ osx_image: xcode8
 services:
   - postgresql
 addons:
-  postgresql: "9.4"
+  postgresql: "9.5"
 before_script:
   - psql -U postgres -c 'create database "test";'
 script:
