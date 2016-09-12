@@ -12,18 +12,8 @@ dist: trusty
 osx_image: xcode8
 services:
   - postgresql
-addons:
-  apt:
-    sources:
-    - precise-pgdg-9.5
-    packages:
-    - postgresql-9.5
-    - postgresql-contrib-9.5
-  postgresql: 9.5
 before_script:
-  - sudo cp /etc/postgresql/9.4/main/pg_hba.conf /etc/postgresql/9.5/main/pg_hba.conf
-  - sudo /etc/init.d/postgresql restart
-  - psql -U postgres -c 'CREATE DATABASE test;'
+  - sudo psql -U postgres -c 'CREATE DATABASE test;'
 script:
   - eval "$(curl -sL swift.vapor.sh/ci)"
   - eval "$(curl -sL swift.vapor.sh/codecov)"
