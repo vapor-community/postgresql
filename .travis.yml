@@ -1,0 +1,19 @@
+os:
+  - linux
+  - osx
+language: generic
+sudo: required
+env:
+  global:
+    - PGPORT=5433
+    - PGHOST=localhost
+    - DATABASE_URL=postgres://localhost:5433/your_db
+dist: trusty
+osx_image: xcode8
+services:
+  - postgresql
+before_script:
+  - sudo psql -U postgres -c 'CREATE DATABASE test;'
+script:
+  - eval "$(curl -sL swift.vapor.sh/ci)"
+  - eval "$(curl -sL swift.vapor.sh/codecov)"
