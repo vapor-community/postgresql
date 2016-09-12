@@ -13,7 +13,8 @@ services:
 addons:
   postgresql: "9.5"
 before_script:
-  - psql -U postgres -c 'create database "test";'
+  - sudo psql -U postgres -c 'create database "test";'
+  - createdb test
 script:
   - eval "$(curl -sL swift.vapor.sh/ci)"
   - eval "$(curl -sL swift.vapor.sh/codecov)"
