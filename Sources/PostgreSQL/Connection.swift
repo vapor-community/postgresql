@@ -6,7 +6,7 @@
 
 public final class Connection {
     public typealias ConnectionPointer = OpaquePointer
-    
+
     private(set) var connection: ConnectionPointer!
 
     public var connected: Bool {
@@ -15,7 +15,7 @@ public final class Connection {
         }
         return false
     }
-    
+
     public init(host: String = "localhost", port: String = "5432", dbname: String, user: String, password: String) throws {
         self.connection = PQconnectdb("host='\(host)' port='\(port)' dbname='\(dbname)' user='\(user)' password='\(password)'")
         if !self.connected {
@@ -27,18 +27,18 @@ public final class Connection {
         guard self.connected else {
             throw DatabaseError.cannotEstablishConnection
         }
-        
+
         PQreset(connection)
     }
-    
+
     public func close() throws {
         guard self.connected else {
             throw DatabaseError.cannotEstablishConnection
         }
-        
+
         PQfinish(connection)
     }
-    
+
     deinit {
         try? close()
     }

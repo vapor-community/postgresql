@@ -26,7 +26,7 @@ class PostgreSQLTests: XCTestCase {
                 XCTFail("Version not in results")
                 return
             }
-            
+
             XCTAssert(string.hasPrefix("PostgreSQL"))
         } catch {
             XCTFail("Could not select version: \(error)")
@@ -40,16 +40,13 @@ class PostgreSQLTests: XCTestCase {
             try postgreSQL.execute("INSERT INTO foo VALUES (42, 'Life')")
             try postgreSQL.execute("INSERT INTO foo VALUES (1337, 'Elite')")
             try postgreSQL.execute("INSERT INTO foo VALUES (9, NULL)")
-            
-            
-            
+
             if let resultBar = try postgreSQL.execute("SELECT * FROM foo WHERE bar = 42").first {
                 XCTAssertEqual(resultBar["bar"]?.int, 42)
                 XCTAssertEqual(resultBar["baz"]?.string, "Life")
             } else {
                 XCTFail("Could not get bar result")
             }
-
 
             if let resultBaz = try postgreSQL.execute("SELECT * FROM foo where baz = 'Elite'").first {
                 XCTAssertEqual(resultBaz["bar"]?.int, 1337)

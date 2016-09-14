@@ -19,7 +19,7 @@ extension Database {
         case fatalError
         case emptyQuery
         case unknown
-        
+
         init(result: Result.ResultPointer) {
             switch PQresultStatus(result) {
             case PGRES_COMMAND_OK:

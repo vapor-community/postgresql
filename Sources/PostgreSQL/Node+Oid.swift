@@ -24,7 +24,7 @@ extension Node {
 			self = .null
 			return
 		}
-		
+
 		switch type {
 		case .text, .varchar, .char:
 			self = .string(value)
