@@ -16,9 +16,9 @@ extension Node {
             return str.utf8
         case .bool(let bool):
             return bool ? "true".utf8 : "false".utf8
-		    case .number(.double(let double)):
-			      return String(double).utf8
-		    case .number(.int(let int)):
+	    case .number(.double(let double)):
+            return String(double).utf8
+	    case .number(.int(let int)):
             return String(int).utf8
         default:
             return String(UInt8(0)).utf8
