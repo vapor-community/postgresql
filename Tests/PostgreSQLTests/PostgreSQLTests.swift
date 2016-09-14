@@ -111,7 +111,7 @@ class PostgreSQLTests: XCTestCase {
                 XCTFail("Could not get test by string result")
             }
         } catch {
-            XCTFail("Testing tables failed: \(error)")
+            XCTFail("Testing parameterization failed: \(error)")
         }
     }
 }
