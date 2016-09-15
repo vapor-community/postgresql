@@ -1,15 +1,12 @@
 os:
   - linux
   - osx
-language: generic
+language: ruby # need a language distro with postgres installed.
 sudo: required
-env:
-  global:
-    - PGPORT=5433
-    - PGHOST=localhost
-    - DATABASE_URL=postgres://localhost:5433/your_db
 dist: trusty
 osx_image: xcode8
+addons:
+  postgresql: "9.5"
 services:
   - postgresql
 before_script:
