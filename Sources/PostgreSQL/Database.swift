@@ -57,12 +57,9 @@ public class Database {
         }
 
         defer { PQclear(res) }
+
         switch Status(result: res) {
-        case .nonFatalError:
-            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) )
-        case .fatalError:
-            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) )
-        case .unknown:
+        case .nonFatalError, .fatalError, .unknown:
             throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) )
         case .tuplesOk:
             return Result(resultPointer: res).dictionary
@@ -73,8 +70,6 @@ public class Database {
     }
 
     func bind(_ values: [Node]) -> UnsafeMutablePointer<UnsafePointer<Int8>?> {
-
-
         let paramsValues = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: values.count)
 
         var v = [[UInt8]]()
