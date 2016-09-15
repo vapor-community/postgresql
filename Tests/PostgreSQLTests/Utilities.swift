@@ -10,14 +10,13 @@ extension PostgreSQL.Database {
                 dbname: "test",
                 user: "postgres",
                 password: ""
-
             )
             try postgreSQL.execute("SELECT version()")
             return postgreSQL
         } catch {
             print()
             print()
-            print("⚠️  PostgreSQL Not Configured ⚠️")
+            print("⚠️ PostgreSQL Not Configured ⚠️")
             print()
             print("Error: \(error)")
             print()
@@ -27,7 +26,6 @@ extension PostgreSQL.Database {
             print("    host: '127.0.0.1'")
             print("    database: 'test'")
             print()
-
             print()
 
             XCTFail("Configure PostgreSQL")
