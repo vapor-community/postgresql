@@ -9,8 +9,7 @@ matrix:
     - os: osx
       osx_image: xcode8
       before_install:
-          - brew update
-          - brew install postgresql
+          - brew services start postgresql
 
 before_script:
   - sudo psql -U postgres -c 'CREATE DATABASE test;'
