@@ -1,16 +1,20 @@
-os:
-  - linux
-  - osx
-language: ruby # need a language distro with postgres installed.
-sudo: required
-dist: trusty
-osx_image: xcode8
-addons:
-  postgresql: "9.5"
-services:
-  - postgresql
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: ruby # comes with postgres pre-installed.
+      addons:
+        postgresql: "9.5"
+    - os: osx
+      osx_image: xcode8
+      before_install:
+          - brew update
+          - brew install postgresql
+
 before_script:
   - sudo psql -U postgres -c 'CREATE DATABASE test;'
+
 script:
   - eval "$(curl -sL swift.vapor.sh/ci)"
   - eval "$(curl -sL swift.vapor.sh/codecov)"
