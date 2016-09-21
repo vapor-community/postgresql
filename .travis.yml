@@ -1,19 +1,22 @@
+language: ruby
 matrix:
   include:
     - os: linux
       dist: trusty
       sudo: required
-      language: ruby # comes with postgres pre-installed.
+      services:
+        - postgresql
       addons:
-        postgresql: "9.5"
+          postgresql: "9.5"
     - os: osx
       osx_image: xcode8
-      before_install:
-          - brew services start postgresql
+install:
+    - "[ $TRAVIS_OS_NAME = osx ] && pg_ctl -D /usr/local/var/postgres start && sleep 3 || true"
 
 before_script:
   - sudo psql -U postgres -c 'CREATE DATABASE test;'
 
 script:
+  - export PAGER=cat
   - eval "$(curl -sL swift.vapor.sh/ci)"
   - eval "$(curl -sL swift.vapor.sh/codecov)"
