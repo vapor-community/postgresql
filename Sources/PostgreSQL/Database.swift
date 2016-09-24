@@ -14,40 +14,40 @@ public enum DatabaseError: Error {
 }
 
 public class Database {
-    private let host: String 
+    private let host: String
     private let port: String
-    private let dbname: String 
-    private let user: String 
-    private let password: String 
+    private let dbname: String
+    private let user: String
+    private let password: String
 
     public init(host: String = "localhost", port: String = "5432", dbname: String, user: String, password: String) {
-        self.host = host 
-        self.port = port 
+        self.host = host
+        self.port = port
         self.dbname = dbname
-        self.user = user 
+        self.user = user
         self.password = password
     }
-    
+
     @discardableResult
     public func execute(_ query: String, _ values: [Node]? = [], on connection: Connection? = nil) throws -> [[String: Node]] {
-        let internalConnection: Connection 
+        let internalConnection: Connection
 
         if let conn = connection {
             internalConnection = conn
         } else {
             internalConnection = try makeConnection()
         }
-        
+
         guard !query.isEmpty else {
             throw DatabaseError.noQuery
         }
-        
+
         let res: Result.ResultPointer
-        
+
         if let values = values, values.count > 0 {
 			let paramsValues = bind(values)
             res = PQexecParams(internalConnection.connection, query, Int32(values.count), nil, paramsValues, nil, nil, Int32(0))
-            
+
             defer {
                 paramsValues.deinitialize()
                 paramsValues.deallocate(capacity: values.count)
@@ -55,14 +55,11 @@ public class Database {
         } else {
             res = PQexec(internalConnection.connection, query)
         }
-        
+
         defer { PQclear(res) }
+
         switch Status(result: res) {
-        case .nonFatalError:
-            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) )
-        case .fatalError:
-            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) )
-        case .unknown:
+        case .nonFatalError, .fatalError, .unknown:
             throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)) )
         case .tuplesOk:
             return Result(resultPointer: res).dictionary
@@ -71,10 +68,8 @@ public class Database {
         }
         return []
     }
-    
+
     func bind(_ values: [Node]) -> UnsafeMutablePointer<UnsafePointer<Int8>?> {
-
-
         let paramsValues = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: values.count)
 
         var v = [[UInt8]]()
@@ -86,7 +81,7 @@ public class Database {
         }
         return paramsValues
     }
-    
+
     public func makeConnection() throws -> Connection {
         return try Connection(host: self.host, port: self.port, dbname: self.dbname, user: self.user, password: self.password)
     }
