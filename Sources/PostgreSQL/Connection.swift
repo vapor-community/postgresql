@@ -43,7 +43,7 @@ public final class Connection {
         guard let s = PQerrorMessage(connection) else {
             return ""
         }
-        return String(cString: s) ?? ""
+        return String(cString: s) 
     }
 
     deinit {
