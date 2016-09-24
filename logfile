@@ -1,0 +1,72 @@
+LOG:  database system was shut down at 2016-09-24 02:49:54 EDT
+LOG:  MultiXact member wraparound protections are now enabled
+LOG:  database system is ready to accept connections
+LOG:  autovacuum launcher started
+FATAL:  role "postgres" does not exist
+FATAL:  lock file "postmaster.pid" already exists
+HINT:  Is another postmaster (PID 17248) running in data directory "/usr/local/var/postgres"?
+LOG:  received fast shutdown request
+LOG:  aborting any active transactions
+LOG:  autovacuum launcher shutting down
+LOG:  shutting down
+LOG:  database system is shut down
+LOG:  database system was shut down at 2016-09-24 02:51:05 EDT
+LOG:  MultiXact member wraparound protections are now enabled
+LOG:  database system is ready to accept connections
+LOG:  autovacuum launcher started
+LOG:  received fast shutdown request
+LOG:  aborting any active transactions
+LOG:  autovacuum launcher shutting down
+LOG:  shutting down
+LOG:  database system is shut down
+LOG:  database system was shut down at 2016-09-24 02:51:12 EDT
+LOG:  MultiXact member wraparound protections are now enabled
+LOG:  database system is ready to accept connections
+LOG:  autovacuum launcher started
+FATAL:  role "postgres" does not exist
+LOG:  received fast shutdown request
+LOG:  aborting any active transactions
+LOG:  autovacuum launcher shutting down
+LOG:  shutting down
+LOG:  database system is shut down
+LOG:  database system was shut down at 2016-09-24 02:52:09 EDT
+LOG:  MultiXact member wraparound protections are now enabled
+LOG:  database system is ready to accept connections
+LOG:  autovacuum launcher started
+FATAL:  role "postgres" does not exist
+FATAL:  role "postgres" does not exist
+FATAL:  database "tanner" does not exist
+FATAL:  database "tanner" does not exist
+FATAL:  database "test" does not exist
+FATAL:  database "tanner" does not exist
+FATAL:  role "postgres" does not exist
+FATAL:  role "postgres" does not exist
+FATAL:  database "test" does not exist
+FATAL:  role "postgres" does not exist
+ERROR:  unrecognized configuration parameter "tables"
+STATEMENT:  show tables;
+ERROR:  syntax error at or near "list" at character 1
+STATEMENT:  list tables;
+ERROR:  SELECT * with no tables specified is not valid at character 8
+STATEMENT:  select *;
+FATAL:  role "postgres" does not exist
+ERROR:  invalid input syntax for integer: "SELECT * FROM parameterization WHERE u = $1"
+STATEMENT:  SELECT * FROM parameterization WHERE u = $1
+ERROR:  invalid input syntax for integer: "SELECT * FROM parameterization WHERE u = $1"
+STATEMENT:  SELECT * FROM parameterization WHERE u = $1
+ERROR:  invalid input syntax for integer: "SELECT * FROM parameterization WHERE u = $1"
+STATEMENT:  SELECT * FROM parameterization WHERE u = $1
+ERROR:  syntax error at or near "EXECUTE" at character 66
+STATEMENT:  PREPARE stmt(int) AS SELECT * FROM parameterization WHERE u = $1 EXECUTE stmt(42)
+ERROR:  syntax error at or near "EXECUTE" at character 66
+STATEMENT:  PREPARE stmt(int) AS SELECT * FROM parameterization WHERE u = $1 EXECUTE stmt(42);
+ERROR:  invalid input syntax for integer: "SELECT * FROM parameterization WHERE u = $1"
+STATEMENT:  SELECT * FROM parameterization WHERE u = $1
+ERROR:  invalid input syntax for integer: "SELECT * FROM parameterization WHERE u = $1::int"
+STATEMENT:  SELECT * FROM parameterization WHERE u = $1::int
+ERROR:  invalid input syntax for integer: ""
+STATEMENT:  SELECT * FROM parameterization WHERE i = $1
+ERROR:  invalid input syntax for integer: "SELECT * FROM parameterization WHERE i = $1"
+STATEMENT:  SELECT * FROM parameterization WHERE i = $1
+ERROR:  invalid input syntax for integer: "SELECT * FROM parameterization WHERE u = $1"
+STATEMENT:  SELECT * FROM parameterization WHERE u = $1
