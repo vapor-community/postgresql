@@ -3,9 +3,10 @@
 #else
     import CPostgreSQLMac
 #endif
+import Core
 
 public enum DatabaseError: Error {
-    case cannotEstablishConnection
+    case cannotEstablishConnection(String)
     case indexOutOfRange
     case columnNotFound
     case invalidSQL(message: String)
@@ -49,6 +50,16 @@ public class Database {
             res = PQexecParams(internalConnection.connection, query, Int32(values.count), nil, paramsValues, nil, nil, Int32(0))
 
             defer {
+                for i in 0..<values.count {
+                    let p = paramsValues[i]
+                    let mp = UnsafeMutablePointer(mutating: p)
+                    mp?.deinitialize()
+                    var i = 0
+                    while p?[i] != 0 {
+                        i += 1
+                    }
+                    mp?.deallocate(capacity: i)
+                }
                 paramsValues.deinitialize()
                 paramsValues.deallocate(capacity: values.count)
             }
@@ -70,14 +81,19 @@ public class Database {
     }
 
     func bind(_ values: [Node]) -> UnsafeMutablePointer<UnsafePointer<Int8>?> {
-        let paramsValues = UnsafeMutablePointer<UnsafePointer<Int8>?>.allocate(capacity: values.count)
+        let paramsValues = UnsafeMutablePointer<UnsafePointer<Int8>?>
+            .allocate(capacity: values.count)
 
-        var v = [[UInt8]]()
         for i in 0..<values.count {
-            var ch = [UInt8](values[i].utf8)
+            var ch = values[i].string?.bytes ?? []
             ch.append(0)
-            v.append(ch)
-            paramsValues[i] = UnsafePointer<Int8>(OpaquePointer(v.last!))
+
+            let p = UnsafeMutablePointer<Int8>.allocate(capacity: ch.count)
+            for (i, c) in ch.enumerated() {
+                p[i] = Int8(bitPattern: c)
+            }
+
+            paramsValues[i] = UnsafePointer(p)
         }
         return paramsValues
     }
