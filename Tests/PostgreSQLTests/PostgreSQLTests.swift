@@ -70,6 +70,8 @@ class PostgreSQLTests: XCTestCase {
         do {
             try postgreSQL.execute("DROP TABLE IF EXISTS parameterization")
             try postgreSQL.execute("CREATE TABLE parameterization (d FLOAT4, i INT, s VARCHAR(16), u INT)")
+            
+            try postgreSQL.execute("INSERT INTO parameterization VALUES ($1, $2, $3, $4)", [.null, .null, "life".makeNode(), .null], on: nil)
 
             try postgreSQL.execute("INSERT INTO parameterization VALUES (3.14, NULL, 'pi', NULL)")
             try postgreSQL.execute("INSERT INTO parameterization VALUES (NULL, NULL, 'life', 42)")
