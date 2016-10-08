@@ -52,6 +52,10 @@ public class Database {
             defer {
                 for i in 0..<values.count {
                     let p = paramsValues[i]
+                    if p == nil {
+                        continue
+                    }
+                    
                     let mp = UnsafeMutablePointer(mutating: p)
                     mp?.deinitialize()
                     var i = 0
@@ -85,6 +89,13 @@ public class Database {
             .allocate(capacity: values.count)
 
         for i in 0..<values.count {
+            // PQexecParams converts nil pointer to NULL.
+            // see: https://www.postgresql.org/docs/9.1/static/libpq-exec.html
+            if values[i] == .null {
+                paramsValues[i] = nil
+                continue
+            }
+            
             var ch = values[i].string?.bytes ?? []
             ch.append(0)
 
