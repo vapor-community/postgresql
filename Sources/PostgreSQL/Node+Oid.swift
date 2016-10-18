@@ -33,7 +33,7 @@ extension Node {
 		case .float4, .float8, .numeric:
 			self = .number(.double(Double(value) ?? 0))
 		case .bool:
-			self = .bool((value == "true") ? true : false)
+			self = .bool((value == "t") ? true : false)
 		case .unknown:
 			self = .null
 		}

@@ -36,14 +36,15 @@ class PostgreSQLTests: XCTestCase {
     func testTables() {
         do {
             try postgreSQL.execute("DROP TABLE IF EXISTS foo")
-            try postgreSQL.execute("CREATE TABLE foo (bar INT, baz VARCHAR(16))")
-            try postgreSQL.execute("INSERT INTO foo VALUES (42, 'Life')")
-            try postgreSQL.execute("INSERT INTO foo VALUES (1337, 'Elite')")
-            try postgreSQL.execute("INSERT INTO foo VALUES (9, NULL)")
+            try postgreSQL.execute("CREATE TABLE foo (bar INT, baz VARCHAR(16), bla BOOLEAN)")
+            try postgreSQL.execute("INSERT INTO foo VALUES (42, 'Life', true)")
+            try postgreSQL.execute("INSERT INTO foo VALUES (1337, 'Elite', false)")
+            try postgreSQL.execute("INSERT INTO foo VALUES (9, NULL, true)")
 
             if let resultBar = try postgreSQL.execute("SELECT * FROM foo WHERE bar = 42").first {
                 XCTAssertEqual(resultBar["bar"]?.int, 42)
                 XCTAssertEqual(resultBar["baz"]?.string, "Life")
+                XCTAssertEqual(resultBar["bla"]?.bool, true)
             } else {
                 XCTFail("Could not get bar result")
             }
@@ -51,6 +52,7 @@ class PostgreSQLTests: XCTestCase {
             if let resultBaz = try postgreSQL.execute("SELECT * FROM foo where baz = 'Elite'").first {
                 XCTAssertEqual(resultBaz["bar"]?.int, 1337)
                 XCTAssertEqual(resultBaz["baz"]?.string, "Elite")
+                XCTAssertEqual(resultBaz["bla"]?.bool, false)
             } else {
                 XCTFail("Could not get baz result")
             }
@@ -58,6 +60,7 @@ class PostgreSQLTests: XCTestCase {
             if let resultBaz = try postgreSQL.execute("SELECT * FROM foo where bar = 9").first {
                 XCTAssertEqual(resultBaz["bar"]?.int, 9)
                 XCTAssertEqual(resultBaz["baz"]?.string, nil)
+                XCTAssertEqual(resultBaz["bla"]?.bool, true)
             } else {
                 XCTFail("Could not get null result")
             }
