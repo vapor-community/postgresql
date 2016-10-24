@@ -36,8 +36,7 @@ extension Node {
 		case .bool:
 			self = .bool((value == "t") ? true : false)
 		case .unknown:
-			// Always fallback to string, allowing to use with custom types as strings
-			self = .string(value)
+			self = .null
 		}
 	}
 }
