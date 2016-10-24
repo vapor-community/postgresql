@@ -21,7 +21,7 @@ public enum OID: Oid {
 extension Node {
 	init(oid: Oid, value: String) {
 		guard let type = OID(rawValue: oid) else {
-            // Always fallback to string, allowing to use with custom types as strings
+			// Always fallback to string, allowing to use with custom types as strings
 			self = .string(value)
 			return
 		}
@@ -36,7 +36,7 @@ extension Node {
 		case .bool:
 			self = .bool((value == "t") ? true : false)
 		case .unknown:
-            // Always fallback to string, allowing to use with custom types as strings
+			// Always fallback to string, allowing to use with custom types as strings
 			self = .string(value)
 		}
 	}
