@@ -15,13 +15,15 @@ public enum OID: Oid {
 	case numeric = 1700
 	case bool = 16
 	case char = 18
+	case bytea = 17
 	case unknown = 705
 }
 
 extension Node {
 	init(oid: Oid, value: String) {
 		guard let type = OID(rawValue: oid) else {
-			self = .null
+			// Always fallback to string, allowing to use with custom types as strings
+			self = .string(value)
 			return
 		}
 
@@ -34,6 +36,8 @@ extension Node {
 			self = .number(.double(Double(value) ?? 0))
 		case .bool:
 			self = .bool((value == "t") ? true : false)
+		case .bytea:
+			self = .array(value.bytes.map { return .number(.uint(UInt($0))) })
 		case .unknown:
 			self = .null
 		}
