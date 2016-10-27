@@ -6,6 +6,7 @@ class PostgreSQLTests: XCTestCase {
         ("testSelectVersion", testSelectVersion),
         ("testTables", testTables),
         ("testParameterization", testParameterization),
+        ("testDataType", testDataType),
         ("testCustomType", testCustomType),
     ]
 
