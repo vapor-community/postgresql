@@ -121,6 +121,22 @@ class PostgreSQLTests: XCTestCase {
         }
     }
     
+    func testDataType() throws {
+        let data: [UInt8] = [1, 2, 3, 4, 5, 0, 6, 7, 8, 9, 0]
+        
+        try postgreSQL.execute("DROP TABLE IF EXISTS foo")
+        try postgreSQL.execute("CREATE TABLE foo (bar BYTEA)")
+        try postgreSQL.execute("INSERT INTO foo VALUES ($1)", [.bytes(data)])
+        
+        let result = try postgreSQL.execute("SELECT * FROM foo").first
+        XCTAssertNotNil(result)
+        
+        let resultBytesNode = result!["bar"]
+        XCTAssertNotNil(resultBytesNode)
+        
+        XCTAssertEqual(resultBytesNode!, .bytes(data))
+    }
+    
     func testCustomType() throws {
         let uuidString = "7fe1743a-96a8-417c-b6c2-c8bb20d3017e"
         let dateString = "2016-10-24 23:04:19.223+00"
