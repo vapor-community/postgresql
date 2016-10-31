@@ -28,6 +28,15 @@ public class Database {
     private let user: String
     private let password: String
     
+    // MARK: - Configuration
+    
+    private var configuration: Configuration?
+    
+    struct Configuration {
+        // Indicates whether date and time values are stored as Int64 or Float64
+        var hasIntegerDatetimes: Bool
+    }
+    
     // MARK: - Init
 
     public init(host: String = "localhost", port: String = "5432", dbname: String, user: String, password: String) {
@@ -81,7 +90,8 @@ public class Database {
             throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)))
             
         case .tuplesOk:
-            return Result(resultPointer: res).dictionary
+            let configuration = try getConfiguration(connection: connection)
+            return Result(configuration: configuration, resultPointer: res).dictionary
             
         default:
             return []
@@ -90,5 +100,27 @@ public class Database {
 
     public func makeConnection() throws -> Connection {
         return try Connection(host: self.host, port: self.port, dbname: self.dbname, user: self.user, password: self.password)
+    }
+    
+    // MARK: - Load Configuration
+    
+    private func getConfiguration(connection: Connection) throws -> Configuration {
+        if let configuration = self.configuration {
+            return configuration
+        }
+        
+        let hasIntegerDatetimes = getBooleanParameterStatus(connection: connection, key: "integer_datetimes", default: true)
+        
+        let configuration = Configuration(hasIntegerDatetimes: hasIntegerDatetimes)
+        self.configuration = configuration
+        
+        return configuration
+    }
+    
+    private func getBooleanParameterStatus(connection: Connection, key: String, `default` defaultValue: Bool = false) -> Bool {
+        guard let value = PQparameterStatus(connection.connection, "integer_datetimes") else {
+            return defaultValue
+        }
+        return String(cString: value) == "on"
     }
 }

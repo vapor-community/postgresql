@@ -35,7 +35,20 @@ struct PostgresBinaryUtils {
         private static let timetz: DateFormatter = formatter(format: "HH:mm:ss.SSSX")
         
         static func dateFormatter(for oid: OID) -> DateFormatter {
-            return timestamptz
+            switch oid {
+            case .date:
+                return date
+            case .time:
+                return time
+            case .timetz:
+                return timetz
+            case .timestamp:
+                return timestamp
+            case .timestamptz:
+                return timestamptz
+            default:
+                return timestamptz
+            }
         }
         
         static let interval: NumberFormatter = {
