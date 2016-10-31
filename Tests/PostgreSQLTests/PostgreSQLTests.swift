@@ -8,6 +8,8 @@ class PostgreSQLTests: XCTestCase {
         ("testParameterization", testParameterization),
         ("testDataType", testDataType),
         ("testCustomType", testCustomType),
+        ("testInts", testInts),
+        ("testFloats", testFloats),
     ]
 
     var postgreSQL: PostgreSQL.Database!
@@ -150,5 +152,65 @@ class PostgreSQLTests: XCTestCase {
         XCTAssertNotNil(result)
         XCTAssertEqual(result!["uuid"]?.string, uuidString)
         XCTAssertEqual(result!["date"]?.string, dateString)
+    }
+    
+    func testInts() throws {
+        let rows: [(Int16, Int32, Int64)] = [
+            (1, 2, 3),
+            (-1, -2, -3),
+            (Int16.min, Int32.min, Int64.min),
+            (Int16.max, Int32.max, Int64.max),
+        ]
+        
+        try postgreSQL.execute("DROP TABLE IF EXISTS foo")
+        try postgreSQL.execute("CREATE TABLE foo (id serial, int2 int2, int4 int4, int8 int8)")
+        for row in rows {
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1, $2, $3)", [row.0.makeNode(), row.1.makeNode(), row.2.makeNode()])
+        }
+        
+        let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
+        XCTAssertEqual(result.count, rows.count)
+        for (i, resultRow) in result.enumerated() {
+            let int2 = resultRow["int2"]
+            XCTAssertNotNil(int2?.int)
+            XCTAssertEqual(int2!.int!, Int(rows[i].0))
+            
+            let int4 = resultRow["int4"]
+            XCTAssertNotNil(int4?.int)
+            XCTAssertEqual(int4!.int!, Int(rows[i].1))
+            
+            let int8 = resultRow["int8"]
+            XCTAssertNotNil(int8?.double)
+            XCTAssertEqual(int8!.double!, Double(rows[i].2))
+        }
+    }
+    
+    func testFloats() throws {
+        let rows: [(Float32, Float64)] = [
+            (1, 2),
+            (-1, -2),
+            (1.23, 2.45),
+            (-1.23, -2.45),
+            (FLT_MIN, DBL_MIN),
+            (FLT_MAX, DBL_MAX),
+        ]
+        
+        try postgreSQL.execute("DROP TABLE IF EXISTS foo")
+        try postgreSQL.execute("CREATE TABLE foo (id serial, float4 float4, float8 float8)")
+        for row in rows {
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1, $2)", [row.0.makeNode(), row.1.makeNode()])
+        }
+        
+        let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
+        XCTAssertEqual(result.count, rows.count)
+        for (i, resultRow) in result.enumerated() {
+            let float4 = resultRow["float4"]
+            XCTAssertNotNil(float4?.double)
+            XCTAssertEqual(float4!.double!, Double(rows[i].0))
+            
+            let float8 = resultRow["float8"]
+            XCTAssertNotNil(float8?.double)
+            XCTAssertEqual(float8!.double!, Double(rows[i].1))
+        }
     }
 }
