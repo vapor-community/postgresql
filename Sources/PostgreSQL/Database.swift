@@ -3,7 +3,6 @@
 #else
     import CPostgreSQLMac
 #endif
-import Core
 
 public enum DatabaseError: Error {
     case cannotEstablishConnection(String)
