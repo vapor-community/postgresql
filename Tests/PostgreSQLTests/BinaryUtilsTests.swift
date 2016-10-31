@@ -11,6 +11,18 @@ class BinaryUtilsTests: XCTestCase {
         ("testParseInt64", testParseInt64),
         ("testParseFloat32", testParseFloat32),
         ("testParseFloat64", testParseFloat64),
+        ("testParseNumeric", testParseNumeric),
+        ("testParseIntegerTimestamp", testParseIntegerTimestamp),
+        ("testParseFloatTimestamp", testParseFloatTimestamp),
+        ("testParseIntegerInterval", testParseIntegerInterval),
+        ("testParseFloatInterval", testParseFloatInterval),
+        ("testParseUUID", testParseUUID),
+        ("testParsePoint", testParsePoint),
+        ("testParseLineSegment", testParseLineSegment),
+        ("testParsePath", testParsePath),
+        ("testParseBox", testParseBox),
+        ("testParsePolygon", testParsePolygon),
+        ("testParseCircle", testParseCircle),
     ]
     
     func testConvert() {
@@ -160,6 +172,218 @@ class BinaryUtilsTests: XCTestCase {
                 }
             }
             XCTAssertEqual(float, convertedFloat)
+        }
+    }
+    
+    func testParseNumeric() {
+        let numericTests = [
+            ("0000000000000000", "0"),
+            ("00010000000000000001", "1"),
+            ("00010000400000000001", "-1"),
+            ("00000000c0000000", "NaN"),
+            ("0006000200000009000109291a8504d2162e2328", "123456789.123456789"),
+            ("0006000340000006270f270f270f270f270f26ac", "-9999999999999999.999999"),
+            ("0001000000000000007b", "123"),
+            ("0002ffff0000000526941388", "0.98765"),
+            ("0002ffff4000000526941388", "-0.98765"),
+        ]
+        
+        for (hexString, numericString) in numericTests {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parseNumeric(value: &bytes)
+            XCTAssertEqual(numericString, parsedString)
+        }
+    }
+    
+    func testParseIntegerTimestamp() {
+        let integerTimestampTests = [
+            ("0001e329a49e5cf8", "2016-10-31 15:29:31.716856".postgreSQLParsedDate),
+            ("0000000000000000", "2000-01-01 00:00:00.000".postgreSQLParsedDate),
+            ("0380e6f773642000", "9999-12-31 00:00:00.000".postgreSQLParsedDate),
+            ("ffaa2a39dbeb0a80", "1234-05-21 12:13:14.000".postgreSQLParsedDate),
+        ]
+
+        for (hexString, timestamp) in integerTimestampTests {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: true)
+            
+            // Because the actual values might be off slightly because of using doubles, compare the description
+            XCTAssertEqual(timestamp.description, parsedString.description)
+        }
+    }
+    
+    func testParseFloatTimestamp() {
+        let floatTimestampTests = [
+            ("41bfaa1fdbb783e0", "2016-10-31 15:29:31.716856".postgreSQLParsedDate),
+            ("0000000000000000", "2000-01-01 00:00:00.000".postgreSQLParsedDate),
+            ("424d63c2d6400000", "9999-12-31 00:00:00.000".postgreSQLParsedDate),
+            ("c216804b02980000", "1234-05-21 12:13:14.000".postgreSQLParsedDate),
+        ]
+
+        for (hexString, timestamp) in floatTimestampTests {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: false)
+            
+            // Because the actual values might be off slightly because of using doubles, compare the description
+            XCTAssertEqual(timestamp.description, parsedString.description)
+        }
+    }
+    
+    func testParseIntegerInterval() {
+        let intervalTests = [
+            ("00000000000f42400000000000000000", "00:00:01"),
+            ("00000000000000000000000000000000", "00:00:00"),
+            ("0000000000000000000000020000002d", "3 years 9 mons 2 days"),
+            ("0000000000b8fb960000000100000011", "1 year 5 mons 1 day 00:00:12.12303"),
+            ("0000000000000000000000000000000c", "1 year"),
+            ("00000000000000000000000000000018", "2 years"),
+            ("00000000000000000000000100000000", "1 day"),
+            ("00000000000000000000000200000000", "2 days"),
+            ("00000000000000000000000000000001", "1 mon"),
+            ("00000000000000000000000000000002", "2 mons"),
+            ("fffffffffff0bdc00000000000000000", "-00:00:01"),
+            ("0000000000000000ffffffff00000000", "-1 days"),
+            ("000000000000000000000001fffffff5", "-11 mons +1 day"),
+        ]
+
+        for (hexString, interval) in intervalTests {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parseInterval(value: &bytes, timeIsInteger: true)
+            XCTAssertEqual(interval, parsedString)
+        }
+    }
+    
+    func testParseFloatInterval() {
+        let intervalTests = [
+            ("3ff00000000000000000000000000000", "00:00:01"),
+            ("00000000000000000000000000000000", "00:00:00"),
+            ("0000000000000000000000020000002d", "3 years 9 mons 2 days"),
+            ("40283efdc9c4da900000000100000011", "1 year 5 mons 1 day 00:00:12.12303"),
+            ("0000000000000000000000000000000c", "1 year"),
+            ("00000000000000000000000000000018", "2 years"),
+            ("00000000000000000000000100000000", "1 day"),
+            ("00000000000000000000000200000000", "2 days"),
+            ("00000000000000000000000000000001", "1 mon"),
+            ("00000000000000000000000000000002", "2 mons"),
+            ("bff00000000000000000000000000000", "-00:00:01"),
+            ("0000000000000000ffffffff00000000", "-1 days"),
+            ("000000000000000000000001fffffff5", "-11 mons +1 day"),
+        ]
+
+        for (hexString, interval) in intervalTests {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parseInterval(value: &bytes, timeIsInteger: false)
+            XCTAssertEqual(interval, parsedString)
+        }
+    }
+    
+    func testParseUUID() {
+        let uuids = [
+            ("5a9279a1-ce1a-429c-8b3c-21c101e748a9"),
+            ("74da9128-6aa6-43ec-84be-f564434ff4f1"),
+            ("c6508ddd-c9dd-40ed-a378-f30c21022d36"),
+            ("fdb8e723-a456-4ab3-b074-ea270a46322d"),
+            ("bbee7f8e-1e39-4504-9565-e5df447b7a3e"),
+            ("5d0bf4f5-c924-438e-9664-fcf302d9c793"),
+            ("9eb40cb4-9520-4abd-ada6-4a2c9b9b06b9"),
+            ("b5434cf4-05dd-4d62-bd52-bcc02e270ed0"),
+            ("d839789e-f6fe-446f-93b1-5f9521c188fd"),
+            ("58ffb8e9-8530-490a-afc1-d01b93b29264"),
+        ]
+        
+        for uuid in uuids {
+            var bytes = uuid.replacingOccurrences(of: "-", with: "").hexStringBytes
+            let parsedString = PostgresBinaryUtils.parseUUID(value: &bytes)
+            XCTAssertEqual(uuid, parsedString)
+        }
+    }
+    
+    func testParsePoint() {
+        let points = [
+            ("3ff3333333333333400b333333333333", "(1.2,3.4)"),
+            ("bff3333333333333c00b333333333333", "(-1.2,-3.4)"),
+            ("405edd3a92a30553c0d70b87e76c8b44", "(123.4567,-23598.1235)"),
+        ]
+        
+        for (hexString, point) in points {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parsePoint(value: &bytes)
+            XCTAssertEqual(point, parsedString)
+        }
+    }
+    
+    func testParseLineSegment() {
+        let lineSegments = [
+            ("3ff3333333333333400b333333333333bff3333333333333c00b333333333333", "[(1.2,3.4),(-1.2,-3.4)]"),
+            ("bff3333333333333c00b333333333333405edd3a92a30553c0d70b87e76c8b44", "[(-1.2,-3.4),(123.4567,-23598.1235)]"),
+            ("405edd3a92a30553c0d70b87e76c8b443ff3333333333333400b333333333333", "[(123.4567,-23598.1235),(1.2,3.4)]"),
+        ]
+        
+        for (hexString, lineSegment) in lineSegments {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parseLineSegment(value: &bytes)
+            XCTAssertEqual(lineSegment, parsedString)
+        }
+    }
+    
+    func testParsePath() {
+        let paths = [
+            ("00000000033ff3333333333333400b333333333333bff3333333333333c00b333333333333405edd3a92a30553c0d70b87e76c8b44", "[(1.2,3.4),(-1.2,-3.4),(123.4567,-23598.1235)]"),
+            ("0100000002bff3333333333333c00b333333333333405edd3a92a30553c0d70b87e76c8b44", "((-1.2,-3.4),(123.4567,-23598.1235))"),
+            ("0100000002405edd3a92a30553c0d70b87e76c8b443ff3333333333333400b333333333333", "((123.4567,-23598.1235),(1.2,3.4))"),
+            ("00000000013ff3333333333333400b333333333333", "[(1.2,3.4)]"),
+            ("0000000000", "[]"),
+            ("0100000000", "()"),
+        ]
+        
+        for (hexString, path) in paths {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parsePath(value: &bytes)
+            XCTAssertEqual(path, parsedString)
+        }
+    }
+    
+    func testParseBox() {
+        let boxes = [
+            ("3ff3333333333333400b333333333333bff3333333333333c00b333333333333", "(1.2,3.4),(-1.2,-3.4)"),
+            ("bff3333333333333c00b333333333333405edd3a92a30553c0d70b87e76c8b44", "(-1.2,-3.4),(123.4567,-23598.1235)"),
+            ("405edd3a92a30553c0d70b87e76c8b443ff3333333333333400b333333333333", "(123.4567,-23598.1235),(1.2,3.4)"),
+        ]
+        
+        for (hexString, box) in boxes {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parseBox(value: &bytes)
+            XCTAssertEqual(box, parsedString)
+        }
+    }
+    
+    func testParsePolygon() {
+        let polygons = [
+            ("000000033ff3333333333333400b333333333333bff3333333333333c00b333333333333405edd3a92a30553c0d70b87e76c8b44", "((1.2,3.4),(-1.2,-3.4),(123.4567,-23598.1235))"),
+            ("00000002bff3333333333333c00b333333333333405edd3a92a30553c0d70b87e76c8b44", "((-1.2,-3.4),(123.4567,-23598.1235))"),
+            ("00000002405edd3a92a30553c0d70b87e76c8b443ff3333333333333400b333333333333", "((123.4567,-23598.1235),(1.2,3.4))"),
+            ("000000013ff3333333333333400b333333333333", "((1.2,3.4))"),
+            ("00000000", "()"),
+        ]
+        
+        for (hexString, polygon) in polygons {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parsePolygon(value: &bytes)
+            XCTAssertEqual(polygon, parsedString)
+        }
+    }
+    
+    func testParseCircle() {
+        let points = [
+            ("3ff3333333333333400b333333333333407c8b3333333333", "<(1.2,3.4),456.7>"),
+            ("bff3333333333333c00b333333333333c058800000000000", "<(-1.2,-3.4),-98>"),
+            ("405edd3a92a30553c0d70b87e76c8b443fbf7ced916872b0", "<(123.4567,-23598.1235),0.123>"),
+        ]
+        
+        for (hexString, point) in points {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parseCircle(value: &bytes)
+            XCTAssertEqual(point, parsedString)
         }
     }
 }

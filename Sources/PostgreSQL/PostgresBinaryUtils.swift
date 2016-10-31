@@ -54,6 +54,7 @@ struct PostgresBinaryUtils {
         static let interval: NumberFormatter = {
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
+            formatter.groupingSeparator = ""
             formatter.decimalSeparator = "."
             formatter.minimumIntegerDigits = 2
             formatter.maximumIntegerDigits = 2
@@ -65,6 +66,7 @@ struct PostgresBinaryUtils {
         static let geometry: NumberFormatter = {
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
+            formatter.groupingSeparator = ""
             formatter.decimalSeparator = "."
             formatter.minimumFractionDigits = 0
             formatter.maximumFractionDigits = 14
@@ -323,6 +325,11 @@ struct PostgresBinaryUtils {
         }
         if let timeString = parseTimeInterval(value: value, isInteger: timeIsInteger) {
             interval.append(timeString)
+        }
+        
+        guard !interval.isEmpty else {
+            // Fallback if all is zero
+            return "00:00:00"
         }
         return interval.joined(separator: " ")
     }
