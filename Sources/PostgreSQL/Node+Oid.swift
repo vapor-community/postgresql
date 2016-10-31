@@ -220,6 +220,11 @@ extension Node {
         
         // Get the dimension of the array
         let arrayDimension = PostgresBinaryUtils.parseInt32(value: arrayValue)
+        guard arrayDimension > 0 else {
+            self = .array([])
+            return
+        }
+        
         var pointer = arrayValue.advanced(by: 12)
         
         // Get all dimension lengths
