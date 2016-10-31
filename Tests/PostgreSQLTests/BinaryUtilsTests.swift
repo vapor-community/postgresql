@@ -23,6 +23,9 @@ class BinaryUtilsTests: XCTestCase {
         ("testParseBox", testParseBox),
         ("testParsePolygon", testParsePolygon),
         ("testParseCircle", testParseCircle),
+        ("testParseIPAddress", testParseIPAddress),
+        ("testParseMacAddress", testParseMacAddress),
+        ("testParseBitString", testParseBitString),
     ]
     
     func testConvert() {
@@ -384,6 +387,74 @@ class BinaryUtilsTests: XCTestCase {
             var bytes = hexString.hexStringBytes
             let parsedString = PostgresBinaryUtils.parseCircle(value: &bytes)
             XCTAssertEqual(point, parsedString)
+        }
+    }
+    
+    func testParseIPAddress() {
+        let ipAddressess = [
+            ("02200004c0a86480", "192.168.100.128"),
+            ("02190004c0a86480", "192.168.100.128/25"),
+            ("03400010200104f8000300ba0000000000000000", "2001:4f8:3:ba::/64"),
+            ("03800010200104f8000300ba02e081fffe22d1f1", "2001:4f8:3:ba:2e0:81ff:fe22:d1f1"),
+            ("02200004503c7bff", "80.60.123.255"),
+            ("0220000400000000", "0.0.0.0"),
+            ("022000047f000001", "127.0.0.1"),
+            ("02200104c0a86480", "192.168.100.128/32"),
+            ("02190104c0a86480", "192.168.100.128/25"),
+            ("03400110200104f8000300ba0000000000000000", "2001:4f8:3:ba::/64"),
+            ("03800110200104f8000300ba02e081fffe22d1f1", "2001:4f8:3:ba:2e0:81ff:fe22:d1f1/128"),
+            ("02200104503c7bff", "80.60.123.255/32"),
+            ("0220010400000000", "0.0.0.0/32"),
+            ("022001047f000001", "127.0.0.1/32"),
+        ]
+        
+        for (hexString, ipAddress) in ipAddressess {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parseIPAddress(value: &bytes)
+            XCTAssertEqual(ipAddress, parsedString)
+        }
+    }
+    
+    func testParseMacAddress() {
+        let macAddressess = [
+            ("5a:92:79:a1:ce:1a"),
+            ("74:da:91:28:6a:a6"),
+            ("c6:50:8d:dd:c9:dd"),
+            ("fd:b8:e7:23:a4:56"),
+            ("bb:ee:7f:8e:1e:39"),
+            ("5d:0b:f4:f5:c9:24"),
+            ("9e:b4:0c:b4:95:20"),
+            ("b5:43:4c:f4:05:dd"),
+            ("d8:39:78:9e:f6:fe"),
+            ("58:ff:b8:e9:85:30"),
+        ]
+        
+        for macAddress in macAddressess {
+            var bytes = macAddress.replacingOccurrences(of: ":", with: "").hexStringBytes
+            let parsedString = PostgresBinaryUtils.parseMacAddress(value: &bytes)
+            XCTAssertEqual(macAddress, parsedString)
+        }
+    }
+    
+    func testParseBitString() {
+        let bitStrings = [
+            ("0000000100", "0"),
+            ("0000000180", "1"),
+            ("0000000240", "01"),
+            ("00000004b0", "1011"),
+            ("0000000430", "0011"),
+            ("0000000865", "01100101"),
+            ("0000002cd238ac8d89e0", "11010010001110001010110010001101100010011110"),
+            ("0000000800", "00000000"),
+            ("00000008ff", "11111111"),
+            ("0000000b0000", "00000000000"),
+            ("0000000affc0", "1111111111"),
+        ]
+        
+        for (hexString, bitString) in bitStrings {
+            var bytes = hexString.hexStringBytes
+            let parsedString = PostgresBinaryUtils.parseBitString(value: &bytes, length: bytes.count)
+            XCTAssertEqual(bitString, parsedString)
         }
     }
 }
