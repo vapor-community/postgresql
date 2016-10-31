@@ -184,19 +184,29 @@ struct PostgresBinaryUtils {
         // Add all digits to a string
         var number: String = ""
         for i in 0..<numberOfDigits {
-            let digit = parseInt16(value: value.advanced(by: 8 + i * 2))
-            number += String(digit)
+            let int16 = parseInt16(value: value.advanced(by: 8 + i * 2))
+            let stringDigits = String(int16)
+            
+            if i == 0 {
+                number += stringDigits
+            }
+            else {
+                // The number of digits should be 4 (DEC_DIGITS),
+                // so pad if necessary.
+                number += String(repeating: "0", count: 4 - stringDigits.characters.count) + stringDigits
+            }
         }
         
         if dscale > 0 {
-            // Remove any trailing zeros
-            while number.hasSuffix("0") {
-                number.remove(at: number.index(number.endIndex, offsetBy: -1))
-            }
-            
             // Make sure we have enough decimal digits by pre-padding with zeros
-            while number.characters.count < dscale {
-                number = "0"+number
+            if number.characters.count < dscale {
+                number = String(repeating: "0", count: dscale - number.characters.count) + number
+            }
+            else {
+                // Remove any trailing zeros
+                while number.hasSuffix("0") {
+                    number.remove(at: number.index(number.endIndex, offsetBy: -1))
+                }
             }
             
             // Insert decimal point

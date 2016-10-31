@@ -282,16 +282,16 @@ class BinaryUtilsTests: XCTestCase {
     
     func testParseUUID() {
         let uuids = [
-            ("5a9279a1-ce1a-429c-8b3c-21c101e748a9"),
-            ("74da9128-6aa6-43ec-84be-f564434ff4f1"),
-            ("c6508ddd-c9dd-40ed-a378-f30c21022d36"),
-            ("fdb8e723-a456-4ab3-b074-ea270a46322d"),
-            ("bbee7f8e-1e39-4504-9565-e5df447b7a3e"),
-            ("5d0bf4f5-c924-438e-9664-fcf302d9c793"),
-            ("9eb40cb4-9520-4abd-ada6-4a2c9b9b06b9"),
-            ("b5434cf4-05dd-4d62-bd52-bcc02e270ed0"),
-            ("d839789e-f6fe-446f-93b1-5f9521c188fd"),
-            ("58ffb8e9-8530-490a-afc1-d01b93b29264"),
+            "5a9279a1-ce1a-429c-8b3c-21c101e748a9",
+            "74da9128-6aa6-43ec-84be-f564434ff4f1",
+            "c6508ddd-c9dd-40ed-a378-f30c21022d36",
+            "fdb8e723-a456-4ab3-b074-ea270a46322d",
+            "bbee7f8e-1e39-4504-9565-e5df447b7a3e",
+            "5d0bf4f5-c924-438e-9664-fcf302d9c793",
+            "9eb40cb4-9520-4abd-ada6-4a2c9b9b06b9",
+            "b5434cf4-05dd-4d62-bd52-bcc02e270ed0",
+            "d839789e-f6fe-446f-93b1-5f9521c188fd",
+            "58ffb8e9-8530-490a-afc1-d01b93b29264",
         ]
         
         for uuid in uuids {
@@ -379,7 +379,7 @@ class BinaryUtilsTests: XCTestCase {
     func testParseCircle() {
         let points = [
             ("3ff3333333333333400b333333333333407c8b3333333333", "<(1.2,3.4),456.7>"),
-            ("bff3333333333333c00b333333333333c058800000000000", "<(-1.2,-3.4),-98>"),
+            ("bff3333333333333c00b3333333333334058800000000000", "<(-1.2,-3.4),98>"),
             ("405edd3a92a30553c0d70b87e76c8b443fbf7ced916872b0", "<(123.4567,-23598.1235),0.123>"),
         ]
         
@@ -417,16 +417,16 @@ class BinaryUtilsTests: XCTestCase {
     
     func testParseMacAddress() {
         let macAddressess = [
-            ("5a:92:79:a1:ce:1a"),
-            ("74:da:91:28:6a:a6"),
-            ("c6:50:8d:dd:c9:dd"),
-            ("fd:b8:e7:23:a4:56"),
-            ("bb:ee:7f:8e:1e:39"),
-            ("5d:0b:f4:f5:c9:24"),
-            ("9e:b4:0c:b4:95:20"),
-            ("b5:43:4c:f4:05:dd"),
-            ("d8:39:78:9e:f6:fe"),
-            ("58:ff:b8:e9:85:30"),
+            "5a:92:79:a1:ce:1a",
+            "74:da:91:28:6a:a6",
+            "c6:50:8d:dd:c9:dd",
+            "fd:b8:e7:23:a4:56",
+            "bb:ee:7f:8e:1e:39",
+            "5d:0b:f4:f5:c9:24",
+            "9e:b4:0c:b4:95:20",
+            "b5:43:4c:f4:05:dd",
+            "d8:39:78:9e:f6:fe",
+            "58:ff:b8:e9:85:30",
         ]
         
         for macAddress in macAddressess {

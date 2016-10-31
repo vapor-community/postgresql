@@ -127,7 +127,7 @@ extension Node {
         case .jsonb:
             // Ignore jsonb version number
             let jsonValue = value.advanced(by: 1)
-            let string = PostgresBinaryUtils.parseString(value: jsonValue, length: length)
+            let string = PostgresBinaryUtils.parseString(value: jsonValue, length: length - 1)
             self = .string(string)
         
         case .int2:
