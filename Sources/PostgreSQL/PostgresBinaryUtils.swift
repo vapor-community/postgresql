@@ -20,19 +20,22 @@ struct PostgresBinaryUtils {
     // MARK: - Formatters
     
     struct Formatters {
-        private static func formatter(format: String) -> DateFormatter {
+        private static func formatter(format: String, forceUTC: Bool) -> DateFormatter {
             let formatter = DateFormatter()
+            if forceUTC {
+                formatter.timeZone = TimeZone(abbreviation: "UTC")
+            }
             formatter.dateFormat = format
             return formatter
         }
         
-        private static let timestamp: DateFormatter = formatter(format: "yyyy-MM-dd HH:mm:ss.SSS")
-        private static let timestamptz: DateFormatter = formatter(format: "yyyy-MM-dd HH:mm:ss.SSSX")
+        private static let timestamp: DateFormatter = formatter(format: "yyyy-MM-dd HH:mm:ss.SSS", forceUTC: true)
+        private static let timestamptz: DateFormatter = formatter(format: "yyyy-MM-dd HH:mm:ss.SSSX", forceUTC: false)
         
-        private static let date: DateFormatter = formatter(format: "yyyy-MM-dd")
+        private static let date: DateFormatter = formatter(format: "yyyy-MM-dd", forceUTC: false)
         
-        private static let time: DateFormatter = formatter(format: "HH:mm:ss.SSS")
-        private static let timetz: DateFormatter = formatter(format: "HH:mm:ss.SSSX")
+        private static let time: DateFormatter = formatter(format: "HH:mm:ss.SSS", forceUTC: true)
+        private static let timetz: DateFormatter = formatter(format: "HH:mm:ss.SSSX", forceUTC: false)
         
         static func dateFormatter(for oid: OID) -> DateFormatter {
             switch oid {

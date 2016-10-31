@@ -74,7 +74,7 @@ class PostgreSQLTests: XCTestCase {
     func testParameterization() {
         do {
             try postgreSQL.execute("DROP TABLE IF EXISTS parameterization")
-            try postgreSQL.execute("CREATE TABLE parameterization (d FLOAT4, i INT, s VARCHAR(16), u INT)")
+            try postgreSQL.execute("CREATE TABLE parameterization (d FLOAT8, i INT, s VARCHAR(16), u INT)")
             
             try postgreSQL.execute("INSERT INTO parameterization VALUES ($1, $2, $3, $4)", [.null, .null, "life".makeNode(), .null], on: nil)
 
@@ -140,10 +140,10 @@ class PostgreSQLTests: XCTestCase {
     
     func testCustomType() throws {
         let uuidString = "7fe1743a-96a8-417c-b6c2-c8bb20d3017e"
-        let dateString = "2016-10-24 23:04:19.223+00"
+        let dateString = "2016-10-24 23:04:19.223"
         
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
-        try postgreSQL.execute("CREATE TABLE foo (uuid UUID, date TIMESTAMP WITH TIME ZONE)")
+        try postgreSQL.execute("CREATE TABLE foo (uuid UUID, date TIMESTAMP WITHOUT TIME ZONE)")
         try postgreSQL.execute("INSERT INTO foo VALUES ($1, $2)", [.string(uuidString), .string(dateString)])
         
         let result = try postgreSQL.execute("SELECT * FROM foo").first
