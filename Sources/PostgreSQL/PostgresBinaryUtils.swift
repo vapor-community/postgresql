@@ -91,6 +91,13 @@ struct PostgresBinaryUtils {
     
     // MARK: - String
     
+    
+    /// Parses a non-null terminated string with a given length from an Int8 pointer into a string
+    ///
+    /// - Parameters:
+    ///   - value: The pointer to the string byte array.
+    ///   - length: The length of the string (excluding null terminator if there is one).
+    /// - Returns: The parsed string.
     static func parseString(value: UnsafeMutablePointer<Int8>, length: Int) -> String {
         // As strings might not be null terminated, use `init(bytes:encoding:)` with buffer pointer
         let bufferPointer = value.withMemoryRebound(to: UInt8.self, capacity: length) {
