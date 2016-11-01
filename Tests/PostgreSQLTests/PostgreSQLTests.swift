@@ -644,4 +644,25 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(value, Node.null)
         }
     }
+    
+    func testUnsupportedOID() throws {
+        try postgreSQL.execute("DROP TABLE IF EXISTS foo")
+        try postgreSQL.execute("CREATE TABLE foo (id serial, oid oid)")
+        try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, 1)", nil)
+        try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, 2)", nil)
+        try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, 123)", nil)
+        try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, 456)", nil)
+        
+        let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
+        XCTAssertEqual(result.count, 4)
+        for resultRow in result {
+            let value = resultRow["oid"]
+            XCTAssertNotNil(value)
+            
+            guard case .bytes(_) = value! else {
+                XCTFail("Result should be in bytes")
+                return
+            }
+        }
+    }
 }
