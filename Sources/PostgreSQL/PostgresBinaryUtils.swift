@@ -14,13 +14,8 @@ extension UInt8 {
 
 extension Float32 {
     init(bigEndian: Float32) {
-        switch Endian.current {
-        case .little:
-            self = bigEndian.byteSwapped
-            
-        case .big:
-            self = bigEndian
-        }
+        let int = UInt32(bigEndian: bigEndian.bitPattern)
+        self = Float32(bitPattern: int)
     }
     
     var bigEndian: Float32 {
@@ -38,13 +33,8 @@ extension Float32 {
 
 extension Float64 {
     init(bigEndian: Float64) {
-        switch Endian.current {
-        case .little:
-            self = bigEndian.byteSwapped
-            
-        case .big:
-            self = bigEndian
-        }
+        let int = UInt64(bigEndian: bigEndian.bitPattern)
+        self = Float64(bitPattern: int)
     }
     
     var bigEndian: Float64 {
