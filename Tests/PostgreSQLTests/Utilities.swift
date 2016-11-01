@@ -72,3 +72,13 @@ extension String {
         return Formatter.static.date(from: self)!
     }
 }
+
+extension Float32 {
+    static let min = Float32(bitPattern: 0x00800000)
+    static let max = Float32(bitPattern: 0x7f7fffff)
+}
+
+extension Float64 {
+    static let min = Float64(bitPattern: 0x0010000000000000)
+    static let max = Float64(bitPattern: 0x7fefffffffffffff)
+}

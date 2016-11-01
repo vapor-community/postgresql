@@ -13,18 +13,50 @@ extension UInt8 {
 }
 
 extension Float32 {
+    init(bigEndian: Float32) {
+        switch Endian.current {
+        case .little:
+            self = bigEndian.byteSwapped
+            
+        case .big:
+            self = bigEndian
+        }
+    }
+    
+    var bigEndian: Float32 {
+        return Float32(bitPattern: bitPattern.bigEndian)
+    }
+    
+    var littleEndian: Float32 {
+        return Float32(bitPattern: bitPattern.littleEndian)
+    }
+    
     var byteSwapped: Float32 {
-        var float = self
-        var bytes = Array(PostgresBinaryUtils.valueToByteArray(&float).reversed())
-        return PostgresBinaryUtils.convert(&bytes)
+        return Float32(bitPattern: bitPattern.byteSwapped)
     }
 }
 
 extension Float64 {
+    init(bigEndian: Float64) {
+        switch Endian.current {
+        case .little:
+            self = bigEndian.byteSwapped
+            
+        case .big:
+            self = bigEndian
+        }
+    }
+    
+    var bigEndian: Float64 {
+        return Float64(bitPattern: bitPattern.bigEndian)
+    }
+    
+    var littleEndian: Float64 {
+        return Float64(bitPattern: bitPattern.littleEndian)
+    }
+    
     var byteSwapped: Float64 {
-        var float = self
-        var bytes = Array(PostgresBinaryUtils.valueToByteArray(&float).reversed())
-        return PostgresBinaryUtils.convert(&bytes)
+        return Float64(bitPattern: bitPattern.byteSwapped)
     }
 }
 
@@ -157,25 +189,11 @@ struct PostgresBinaryUtils {
     // MARK: - Float
     
     static func parseFloat32(value: UnsafeMutablePointer<Int8>) -> Float32 {
-        let float: Float32 = convert(value)
-        switch Endian.current {
-        case .big:
-            return float
-            
-        case .little:
-            return float.byteSwapped
-        }
+        return Float32(bigEndian: convert(value))
     }
     
     static func parseFloat64(value: UnsafeMutablePointer<Int8>) -> Float64 {
-        let float: Float64 = convert(value)
-        switch Endian.current {
-        case .big:
-            return float
-            
-        case .little:
-            return float.byteSwapped
-        }
+        return Float64(bigEndian: convert(value))
     }
     
     // MARK: - Numberic

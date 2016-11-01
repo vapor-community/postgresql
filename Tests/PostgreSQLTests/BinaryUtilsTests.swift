@@ -1,5 +1,6 @@
 import XCTest
 @testable import PostgreSQL
+import Foundation
 
 class BinaryUtilsTests: XCTestCase {
     static let allTests = [
@@ -151,16 +152,10 @@ class BinaryUtilsTests: XCTestCase {
     }
     
     func testParseFloat32() {
-        let testFloats: [Float32] = [0, 1, 1, 123, 999, 1.23, -456.789, FLT_MIN, FLT_MAX]
+        let testFloats: [Float32] = [0, 1, 1, 123, 999, 1.23, -456.789, Float32.min, Float32.max]
         
         for float in testFloats {
-            var bigEndian: Float32
-            switch Endian.current {
-            case .little:
-                bigEndian = float.byteSwapped
-            case .big:
-                bigEndian = float
-            }
+            var bigEndian = float.bigEndian
             let convertedFloat: Float32 = withUnsafeMutablePointer(to: &bigEndian) {
                 $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: bigEndian)) { value in
                     return PostgresBinaryUtils.parseFloat32(value: value)
@@ -171,16 +166,10 @@ class BinaryUtilsTests: XCTestCase {
     }
     
     func testParseFloat64() {
-        let testFloats: [Float64] = [0, 1, 1, 123, 999, 1.23, -456.789, DBL_MIN, DBL_MAX]
+        let testFloats: [Float64] = [0, 1, 1, 123, 999, 1.23, -456.789, Float64.min, Float64.max]
         
         for float in testFloats {
-            var bigEndian: Float64
-            switch Endian.current {
-            case .little:
-                bigEndian = float.byteSwapped
-            case .big:
-                bigEndian = float
-            }
+            var bigEndian = float.bigEndian
             let convertedFloat: Float64 = withUnsafeMutablePointer(to: &bigEndian) {
                 $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: bigEndian)) { value in
                     return PostgresBinaryUtils.parseFloat64(value: value)

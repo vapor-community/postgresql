@@ -1,5 +1,6 @@
 import XCTest
 @testable import PostgreSQL
+import Foundation
 
 class PostgreSQLTests: XCTestCase {
     static let allTests = [
@@ -205,8 +206,8 @@ class PostgreSQLTests: XCTestCase {
             (-1, -2),
             (1.23, 2.45),
             (-1.23, -2.45),
-            (FLT_MIN, DBL_MIN),
-            (FLT_MAX, DBL_MAX),
+            (Float32.min, Float64.min),
+            (Float32.max, Float64.max),
         ]
         
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")

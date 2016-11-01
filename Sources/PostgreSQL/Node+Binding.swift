@@ -76,8 +76,7 @@ extension Bool {
 
 extension Int {
     var postgresBindingData: ([Int8]?, OID?, DataFormat) {
-        var value = bigEndian
-        let count = MemoryLayout.size(ofValue: value)
+        let count = MemoryLayout.size(ofValue: self)
         
         let oid: OID
         switch count {
@@ -92,23 +91,12 @@ extension Int {
             return description.postgresBindingData
         }
         
+        var value = bigEndian
         return (PostgresBinaryUtils.valueToByteArray(&value), oid, .binary)
     }
 }
 
 extension Double {
-    private var bigEndianData: [Int8] {
-        var value = self
-        let byteArray = PostgresBinaryUtils.valueToByteArray(&value)
-        
-        switch Endian.current {
-        case .big:
-            return byteArray
-        case .little:
-            return Array(byteArray.reversed())
-        }
-    }
-    
     var postgresBindingData: ([Int8]?, OID?, DataFormat) {
         let count = MemoryLayout.size(ofValue: self)
         
@@ -123,7 +111,8 @@ extension Double {
             return description.postgresBindingData
         }
         
-        return (bigEndianData, oid, .binary)
+        var value = bigEndian
+        return (PostgresBinaryUtils.valueToByteArray(&value), oid, .binary)
     }
 }
 
