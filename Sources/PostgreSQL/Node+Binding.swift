@@ -68,15 +68,6 @@ extension Node {
     }
 }
 
-private func valueToByteArray<T>(_ value: inout T) -> [Int8] {
-    let size = MemoryLayout.size(ofValue: value)
-    return withUnsafePointer(to: &value) { valuePointer in
-        return valuePointer.withMemoryRebound(to: Int8.self, capacity: size) { bytePointer in
-            return Array(UnsafeBufferPointer(start: bytePointer, count: size))
-        }
-    }
-}
-
 extension Bool {
     var postgresBindingData: ([Int8]?, OID?, DataFormat) {
         return ([self ? 1 : 0], .bool, .binary)
@@ -101,19 +92,20 @@ extension Int {
             return description.postgresBindingData
         }
         
-        return (valueToByteArray(&value), oid, .binary)
+        return (PostgresBinaryUtils.valueToByteArray(&value), oid, .binary)
     }
 }
 
 extension Double {
     private var bigEndianData: [Int8] {
+        var value = self
+        let byteArray = PostgresBinaryUtils.valueToByteArray(&value)
+        
         switch Endian.current {
         case .big:
-            var value = self
-            return valueToByteArray(&value)
+            return byteArray
         case .little:
-            var value = CFConvertDoubleHostToSwapped(self)
-            return valueToByteArray(&value)
+            return Array(byteArray.reversed())
         }
     }
     

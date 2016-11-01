@@ -12,6 +12,22 @@ extension UInt8 {
     }
 }
 
+extension Float32 {
+    var byteSwapped: Float32 {
+        var float = self
+        var bytes = Array(PostgresBinaryUtils.valueToByteArray(&float).reversed())
+        return PostgresBinaryUtils.convert(&bytes)
+    }
+}
+
+extension Float64 {
+    var byteSwapped: Float64 {
+        var float = self
+        var bytes = Array(PostgresBinaryUtils.valueToByteArray(&float).reversed())
+        return PostgresBinaryUtils.convert(&bytes)
+    }
+}
+
 /// Most information for parsing binary formats has been retrieved from the following links:
 /// - https://www.postgresql.org/docs/9.6/static/datatype.html (Data types)
 /// - https://github.com/postgres/postgres/tree/55c3391d1e6a201b5b891781d21fe682a8c64fe6/src/backend/utils/adt (Backend sending code)
@@ -94,6 +110,15 @@ struct PostgresBinaryUtils {
         return uint8Bytes
     }
     
+    static func valueToByteArray<T>(_ value: inout T) -> [Int8] {
+        let size = MemoryLayout.size(ofValue: value)
+        return withUnsafePointer(to: &value) { valuePointer in
+            return valuePointer.withMemoryRebound(to: Int8.self, capacity: size) { bytePointer in
+                return Array(UnsafeBufferPointer(start: bytePointer, count: size))
+            }
+        }
+    }
+    
     // MARK: - String
     
     
@@ -132,29 +157,25 @@ struct PostgresBinaryUtils {
     // MARK: - Float
     
     static func parseFloat32(value: UnsafeMutablePointer<Int8>) -> Float32 {
-        let float: Float32
+        let float: Float32 = convert(value)
         switch Endian.current {
         case .big:
-            float = convert(value)
+            return float
             
         case .little:
-            let swapped = CFSwappedFloat32(v: convert(value))
-            float = CFConvertFloat32SwappedToHost(swapped)
+            return float.byteSwapped
         }
-        return float
     }
     
     static func parseFloat64(value: UnsafeMutablePointer<Int8>) -> Float64 {
-        let float: Float64
+        let float: Float64 = convert(value)
         switch Endian.current {
         case .big:
-            float = convert(value)
+            return float
             
         case .little:
-            let swapped = CFSwappedFloat64(v: convert(value))
-            float = CFConvertFloat64SwappedToHost(swapped)
+            return float.byteSwapped
         }
-        return float
     }
     
     // MARK: - Numberic
@@ -276,10 +297,12 @@ struct PostgresBinaryUtils {
             totalSeconds *= -1
         }
         
-        let hours = Int64(totalSeconds / (60 * 60))
+        let hoursDouble = totalSeconds / (60 * 60)
+        let hours = Int64(hoursDouble > Double(Int64.max) ? Int64.max : Int64(hoursDouble))
         totalSeconds -= Float64(hours) * (60 * 60)
         
-        let minutes = Int64(totalSeconds / 60)
+        let minutesDouble = totalSeconds / 60
+        let minutes = Int64(minutesDouble > Double(Int64.max) ? Int64.max : Int64(minutesDouble))
         totalSeconds -= Float64(minutes) * 60
         
         let seconds = Double(totalSeconds)

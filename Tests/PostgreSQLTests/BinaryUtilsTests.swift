@@ -154,7 +154,13 @@ class BinaryUtilsTests: XCTestCase {
         let testFloats: [Float32] = [0, 1, 1, 123, 999, 1.23, -456.789, FLT_MIN, FLT_MAX]
         
         for float in testFloats {
-            var bigEndian = CFConvertFloat32HostToSwapped(float).v
+            var bigEndian: Float32
+            switch Endian.current {
+            case .little:
+                bigEndian = float.byteSwapped
+            case .big:
+                bigEndian = float
+            }
             let convertedFloat: Float32 = withUnsafeMutablePointer(to: &bigEndian) {
                 $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: bigEndian)) { value in
                     return PostgresBinaryUtils.parseFloat32(value: value)
@@ -168,7 +174,13 @@ class BinaryUtilsTests: XCTestCase {
         let testFloats: [Float64] = [0, 1, 1, 123, 999, 1.23, -456.789, DBL_MIN, DBL_MAX]
         
         for float in testFloats {
-            var bigEndian = CFConvertFloat64HostToSwapped(float).v
+            var bigEndian: Float64
+            switch Endian.current {
+            case .little:
+                bigEndian = float.byteSwapped
+            case .big:
+                bigEndian = float
+            }
             let convertedFloat: Float64 = withUnsafeMutablePointer(to: &bigEndian) {
                 $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: bigEndian)) { value in
                     return PostgresBinaryUtils.parseFloat64(value: value)
