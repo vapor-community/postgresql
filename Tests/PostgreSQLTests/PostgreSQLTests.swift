@@ -25,12 +25,42 @@ class PostgreSQLTests: XCTestCase {
         ("testMacAddresses", testMacAddresses),
         ("testBitStrings", testBitStrings),
         ("testVarBitStrings", testVarBitStrings),
+        ("testUnsupportedObject", testUnsupportedObject),
     ]
 
     var postgreSQL: PostgreSQL.Database!
 
     override func setUp() {
         postgreSQL = PostgreSQL.Database.makeTestConnection()
+    }
+    
+    func testConnectionFailure() throws {
+        let database = PostgreSQL.Database(
+            host: "127.0.0.1",
+            port: "5432",
+            dbname: "some_long_db_name_that_does_not_exist",
+            user: "postgres",
+            password: ""
+        )
+        
+        try XCTAssertThrowsError(database.makeConnection()) { error in
+            switch error {
+            case DatabaseError.cannotEstablishConnection(_):
+                break
+            
+            default:
+                XCTFail("Invalid error")
+            }
+        }
+    }
+    
+    func testConnection() throws {
+        let connection = try postgreSQL.makeConnection()
+        XCTAssertTrue(connection.connected)
+        
+        try connection.reset()
+        try connection.close()
+        XCTAssertFalse(connection.connected)
     }
 
     func testSelectVersion() {
@@ -589,6 +619,29 @@ class PostgreSQLTests: XCTestCase {
             let bits = resultRow["bits"]
             XCTAssertNotNil(bits?.string)
             XCTAssertEqual(bits!.string!, rows[i])
+        }
+    }
+    
+    func testUnsupportedObject() throws {
+        let rows: [Node] = [
+            .object(["1":1, "2":2]),
+            .object(["1":1, "2":2, "3":3]),
+            .object([:]),
+            .object(["1":1]),
+        ]
+        
+        try postgreSQL.execute("DROP TABLE IF EXISTS foo")
+        try postgreSQL.execute("CREATE TABLE foo (id serial, text text)")
+        for row in rows {
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row])
+        }
+        
+        let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
+        XCTAssertEqual(result.count, rows.count)
+        for resultRow in result {
+            let value = resultRow["text"]
+            XCTAssertNotNil(value)
+            XCTAssertEqual(value, Node.null)
         }
     }
 }

@@ -14,6 +14,8 @@ enum OID: Oid {
     case int4 = 23
     case int8 = 20
     
+    case bytea = 17
+    
     case char = 18
     case name = 19
     case text = 25
@@ -54,9 +56,13 @@ enum OID: Oid {
     
     static let supportedArrayOIDs: Set<Oid> = [
         1000, // bool
+        
         1005, // int2
         1007, // int4
         1016, // int8
+        
+        1001, // bytea
+        
         1002, // char
         1003, // name
         1009, // text
@@ -145,6 +151,10 @@ extension Node {
             } else {
                 self = .number(.double(Double(integer)))
             }
+            
+        case .bytea:
+            let bytes = PostgresBinaryUtils.parseBytes(value: value, length: length)
+            self = .bytes(bytes)
         
         case .float4:
             let float = PostgresBinaryUtils.parseFloat32(value: value)
