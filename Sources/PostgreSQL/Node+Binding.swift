@@ -1,4 +1,5 @@
 import Foundation
+import Core
 
 extension Node {
     var postgresBindingData: ([Int8]?, OID?, DataFormat) {
@@ -28,7 +29,7 @@ extension Node {
         case .array(let array):
             let elements = array.map { $0.postgresArrayElementString }
             let arrayString = "{\(elements.joined(separator: ","))}"
-            return (Array(arrayString.utf8CString), .none, .string)
+            return (arrayString.utf8CString.array, .none, .string)
             
         case .object(_):
             print("Unsupported Node type for PostgreSQL binding, everything except for .object is supported.")
@@ -118,6 +119,6 @@ extension Double {
 
 extension String {
     var postgresBindingData: ([Int8]?, OID?, DataFormat) {
-        return (Array(utf8CString), .none, .string)
+        return (utf8CString.array, .none, .string)
     }
 }

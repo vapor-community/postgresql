@@ -1,4 +1,5 @@
 import Foundation
+import Core
 
 extension UInt8 {
     var lowercaseHexPair: String {
@@ -136,7 +137,7 @@ struct PostgresBinaryUtils {
         let size = MemoryLayout.size(ofValue: value)
         return withUnsafePointer(to: &value) { valuePointer in
             return valuePointer.withMemoryRebound(to: Int8.self, capacity: size) { bytePointer in
-                return Array(UnsafeBufferPointer(start: bytePointer, count: size))
+                return UnsafeBufferPointer(start: bytePointer, count: size).array
             }
         }
     }
