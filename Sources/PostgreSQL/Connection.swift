@@ -17,7 +17,7 @@ public final class Connection {
     }
 
     public init(host: String = "localhost", port: String = "5432", dbname: String, user: String, password: String) throws {
-        self.connection = PQconnectdb("host='\(host)' port='\(port)' dbname='\(dbname)' user='\(user)' password='\(password)'")
+        self.connection = PQconnectdb("host='\(host)' port='\(port)' dbname='\(dbname)' user='\(user)' password='\(password)' client_encoding='UTF8'")
         if !self.connected {
             throw DatabaseError.cannotEstablishConnection(error)
         }
