@@ -209,10 +209,8 @@ class BinaryUtilsTests: XCTestCase {
 
         for (hexString, timestamp) in integerTimestampTests {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: true)
-            
-            // Because the actual values might be off slightly because of using doubles, compare the description
-            XCTAssertEqual(timestamp.description, parsedString.description)
+            let parsedDate = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: true)
+            XCTAssertEqualWithAccuracy(timestamp.timeIntervalSince1970, parsedDate.timeIntervalSince1970, accuracy: 0.001)
         }
     }
     
@@ -226,58 +224,56 @@ class BinaryUtilsTests: XCTestCase {
 
         for (hexString, timestamp) in floatTimestampTests {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: false)
-            
-            // Because the actual values might be off slightly because of using doubles, compare the description
-            XCTAssertEqual(timestamp.description, parsedString.description)
+            let parsedDate = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: false)
+            XCTAssertEqualWithAccuracy(timestamp.timeIntervalSince1970, parsedDate.timeIntervalSince1970, accuracy: 0.001)
         }
     }
     
     func testParseIntegerInterval() {
         let intervalTests = [
-            ("00000000000f42400000000000000000", "00:00:01"),
-            ("00000000000000000000000000000000", "00:00:00"),
-            ("0000000000000000000000020000002d", "3 years 9 mons 2 days"),
-            ("0000000000b8fb960000000100000011", "1 year 5 mons 1 day 00:00:12.12303"),
-            ("0000000000000000000000000000000c", "1 year"),
-            ("00000000000000000000000000000018", "2 years"),
-            ("00000000000000000000000100000000", "1 day"),
-            ("00000000000000000000000200000000", "2 days"),
-            ("00000000000000000000000000000001", "1 mon"),
-            ("00000000000000000000000000000002", "2 mons"),
-            ("fffffffffff0bdc00000000000000000", "-00:00:01"),
-            ("0000000000000000ffffffff00000000", "-1 days"),
-            ("000000000000000000000001fffffff5", "-11 mons +1 day"),
+            ("00000000000f42400000000000000000", ["00:00:01", "0:0:1"]),
+            ("00000000000000000000000000000000", ["00:00:00", "0:0:0"]),
+            ("0000000000000000000000020000002d", ["3 years 9 mons 2 days"]),
+            ("0000000000b8fb960000000100000011", ["1 year 5 mons 1 day 00:00:12.12303", "1 year 5 mons 1 day 0:0:12.123"]),
+            ("0000000000000000000000000000000c", ["1 year"]),
+            ("00000000000000000000000000000018", ["2 years"]),
+            ("00000000000000000000000100000000", ["1 day"]),
+            ("00000000000000000000000200000000", ["2 days"]),
+            ("00000000000000000000000000000001", ["1 mon"]),
+            ("00000000000000000000000000000002", ["2 mons"]),
+            ("fffffffffff0bdc00000000000000000", ["-00:00:01", "-0:0:1"]),
+            ("0000000000000000ffffffff00000000", ["-1 days"]),
+            ("000000000000000000000001fffffff5", ["-11 mons +1 day"]),
         ]
 
-        for (hexString, interval) in intervalTests {
+        for (hexString, intervals) in intervalTests {
             var bytes = hexString.hexStringBytes
             let parsedString = PostgresBinaryUtils.parseInterval(value: &bytes, timeIsInteger: true)
-            XCTAssertEqual(interval, parsedString)
+            XCTAssertTrue(intervals.contains(parsedString))
         }
     }
     
     func testParseFloatInterval() {
         let intervalTests = [
-            ("3ff00000000000000000000000000000", "00:00:01"),
-            ("00000000000000000000000000000000", "00:00:00"),
-            ("0000000000000000000000020000002d", "3 years 9 mons 2 days"),
-            ("40283efdc9c4da900000000100000011", "1 year 5 mons 1 day 00:00:12.12303"),
-            ("0000000000000000000000000000000c", "1 year"),
-            ("00000000000000000000000000000018", "2 years"),
-            ("00000000000000000000000100000000", "1 day"),
-            ("00000000000000000000000200000000", "2 days"),
-            ("00000000000000000000000000000001", "1 mon"),
-            ("00000000000000000000000000000002", "2 mons"),
-            ("bff00000000000000000000000000000", "-00:00:01"),
-            ("0000000000000000ffffffff00000000", "-1 days"),
-            ("000000000000000000000001fffffff5", "-11 mons +1 day"),
+            ("3ff00000000000000000000000000000", ["00:00:01", "0:0:1"]),
+            ("00000000000000000000000000000000", ["00:00:00", "0:0:0"]),
+            ("0000000000000000000000020000002d", ["3 years 9 mons 2 days"]),
+            ("40283efdc9c4da900000000100000011", ["1 year 5 mons 1 day 00:00:12.12303", "1 year 5 mons 1 day 0:0:12.123"]),
+            ("0000000000000000000000000000000c", ["1 year"]),
+            ("00000000000000000000000000000018", ["2 years"]),
+            ("00000000000000000000000100000000", ["1 day"]),
+            ("00000000000000000000000200000000", ["2 days"]),
+            ("00000000000000000000000000000001", ["1 mon"]),
+            ("00000000000000000000000000000002", ["2 mons"]),
+            ("bff00000000000000000000000000000", ["-00:00:01", "-0:0:1"]),
+            ("0000000000000000ffffffff00000000", ["-1 days"]),
+            ("000000000000000000000001fffffff5", ["-11 mons +1 day"]),
         ]
 
-        for (hexString, interval) in intervalTests {
+        for (hexString, intervals) in intervalTests {
             var bytes = hexString.hexStringBytes
             let parsedString = PostgresBinaryUtils.parseInterval(value: &bytes, timeIsInteger: false)
-            XCTAssertEqual(interval, parsedString)
+            XCTAssertTrue(intervals.contains(parsedString))
         }
     }
     
@@ -306,7 +302,7 @@ class BinaryUtilsTests: XCTestCase {
         let points = [
             ("3ff3333333333333400b333333333333", "(1.2,3.4)"),
             ("bff3333333333333c00b333333333333", "(-1.2,-3.4)"),
-            ("405edd3a92a30553c0d70b87e76c8b44", "(123.4567,-23598.1235)"),
+            ("405edd2f1a9fbe77c078e5999999999a", "(123.456,-398.35)"),
         ]
         
         for (hexString, point) in points {
@@ -319,8 +315,8 @@ class BinaryUtilsTests: XCTestCase {
     func testParseLineSegment() {
         let lineSegments = [
             ("3ff3333333333333400b333333333333bff3333333333333c00b333333333333", "[(1.2,3.4),(-1.2,-3.4)]"),
-            ("bff3333333333333c00b333333333333405edd3a92a30553c0d70b87e76c8b44", "[(-1.2,-3.4),(123.4567,-23598.1235)]"),
-            ("405edd3a92a30553c0d70b87e76c8b443ff3333333333333400b333333333333", "[(123.4567,-23598.1235),(1.2,3.4)]"),
+            ("bff3333333333333c00b333333333333405edd2f1a9fbe77c078e5999999999a", "[(-1.2,-3.4),(123.456,-398.35)]"),
+            ("405edd2f1a9fbe77c078e5999999999a3ff3333333333333400b333333333333", "[(123.456,-398.35),(1.2,3.4)]"),
         ]
         
         for (hexString, lineSegment) in lineSegments {
@@ -332,9 +328,9 @@ class BinaryUtilsTests: XCTestCase {
     
     func testParsePath() {
         let paths = [
-            ("00000000033ff3333333333333400b333333333333bff3333333333333c00b333333333333405edd3a92a30553c0d70b87e76c8b44", "[(1.2,3.4),(-1.2,-3.4),(123.4567,-23598.1235)]"),
-            ("0100000002bff3333333333333c00b333333333333405edd3a92a30553c0d70b87e76c8b44", "((-1.2,-3.4),(123.4567,-23598.1235))"),
-            ("0100000002405edd3a92a30553c0d70b87e76c8b443ff3333333333333400b333333333333", "((123.4567,-23598.1235),(1.2,3.4))"),
+            ("00000000033ff3333333333333400b333333333333bff3333333333333c00b333333333333405edd2f1a9fbe77c078e5999999999a", "[(1.2,3.4),(-1.2,-3.4),(123.456,-398.35)]"),
+            ("0100000002bff3333333333333c00b333333333333405edd2f1a9fbe77c078e5999999999a", "((-1.2,-3.4),(123.456,-398.35))"),
+            ("0100000002405edd2f1a9fbe77c078e5999999999a3ff3333333333333400b333333333333", "((123.456,-398.35),(1.2,3.4))"),
             ("00000000013ff3333333333333400b333333333333", "[(1.2,3.4)]"),
             ("0000000000", "[]"),
             ("0100000000", "()"),
@@ -350,8 +346,8 @@ class BinaryUtilsTests: XCTestCase {
     func testParseBox() {
         let boxes = [
             ("3ff3333333333333400b333333333333bff3333333333333c00b333333333333", "(1.2,3.4),(-1.2,-3.4)"),
-            ("bff3333333333333c00b333333333333405edd3a92a30553c0d70b87e76c8b44", "(-1.2,-3.4),(123.4567,-23598.1235)"),
-            ("405edd3a92a30553c0d70b87e76c8b443ff3333333333333400b333333333333", "(123.4567,-23598.1235),(1.2,3.4)"),
+            ("bff3333333333333c00b333333333333405edd2f1a9fbe77c078e5999999999a", "(-1.2,-3.4),(123.456,-398.35)"),
+            ("405edd2f1a9fbe77c078e5999999999a3ff3333333333333400b333333333333", "(123.456,-398.35),(1.2,3.4)"),
         ]
         
         for (hexString, box) in boxes {
@@ -363,9 +359,9 @@ class BinaryUtilsTests: XCTestCase {
     
     func testParsePolygon() {
         let polygons = [
-            ("000000033ff3333333333333400b333333333333bff3333333333333c00b333333333333405edd3a92a30553c0d70b87e76c8b44", "((1.2,3.4),(-1.2,-3.4),(123.4567,-23598.1235))"),
-            ("00000002bff3333333333333c00b333333333333405edd3a92a30553c0d70b87e76c8b44", "((-1.2,-3.4),(123.4567,-23598.1235))"),
-            ("00000002405edd3a92a30553c0d70b87e76c8b443ff3333333333333400b333333333333", "((123.4567,-23598.1235),(1.2,3.4))"),
+            ("000000033ff3333333333333400b333333333333bff3333333333333c00b333333333333405edd2f1a9fbe77c078e5999999999a", "((1.2,3.4),(-1.2,-3.4),(123.456,-398.35))"),
+            ("00000002bff3333333333333c00b333333333333405edd2f1a9fbe77c078e5999999999a", "((-1.2,-3.4),(123.456,-398.35))"),
+            ("00000002405edd2f1a9fbe77c078e5999999999a3ff3333333333333400b333333333333", "((123.456,-398.35),(1.2,3.4))"),
             ("000000013ff3333333333333400b333333333333", "((1.2,3.4))"),
             ("00000000", "()"),
         ]
@@ -381,7 +377,7 @@ class BinaryUtilsTests: XCTestCase {
         let points = [
             ("3ff3333333333333400b333333333333407c8b3333333333", "<(1.2,3.4),456.7>"),
             ("bff3333333333333c00b3333333333334058800000000000", "<(-1.2,-3.4),98>"),
-            ("405edd3a92a30553c0d70b87e76c8b443fbf7ced916872b0", "<(123.4567,-23598.1235),0.123>"),
+            ("405edd2f1a9fbe77c078e5999999999a3fbf7ced916872b0", "<(123.456,-398.35),0.123>"),
         ]
         
         for (hexString, point) in points {
