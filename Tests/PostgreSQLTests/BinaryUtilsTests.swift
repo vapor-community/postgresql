@@ -209,7 +209,9 @@ class BinaryUtilsTests: XCTestCase {
 
         for (hexString, timestamp) in integerTimestampTests {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: true)
+            let parsedString = withExtendedLifetime(bytes) {
+                return PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: true)
+            }
             
             // Because the actual values might be off slightly because of using doubles, compare the description
             XCTAssertEqual(timestamp.description, parsedString.description)

@@ -270,7 +270,7 @@ struct PostgresBinaryUtils {
     static func parseTimetamp(value: UnsafeMutablePointer<Int8>, isInteger: Bool) -> Date {
         let interval: TimeInterval
         if isInteger {
-            let microseconds = parseInt64(value: (value))
+            let microseconds = parseInt64(value: value)
             interval = TimeInterval(microseconds) / 1_000_000
         } else {
             let seconds = parseFloat64(value :value)
