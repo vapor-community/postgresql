@@ -210,7 +210,7 @@ class BinaryUtilsTests: XCTestCase {
         for (hexString, timestamp) in integerTimestampTests {
             var bytes = hexString.hexStringBytes
             let parsedDate = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: true)
-            XCTAssertEqualWithAccuracy(timestamp.timeIntervalSince1970, parsedDate.timeIntervalSince1970, accuracy: 0.001)
+            XCTAssertEqualWithAccuracy(timestamp.timeIntervalSince1970, parsedDate.timeIntervalSince1970, accuracy: 0.01)
         }
     }
     
@@ -225,7 +225,7 @@ class BinaryUtilsTests: XCTestCase {
         for (hexString, timestamp) in floatTimestampTests {
             var bytes = hexString.hexStringBytes
             let parsedDate = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: false)
-            XCTAssertEqualWithAccuracy(timestamp.timeIntervalSince1970, parsedDate.timeIntervalSince1970, accuracy: 0.001)
+            XCTAssertEqualWithAccuracy(timestamp.timeIntervalSince1970, parsedDate.timeIntervalSince1970, accuracy: 0.01)
         }
     }
     
