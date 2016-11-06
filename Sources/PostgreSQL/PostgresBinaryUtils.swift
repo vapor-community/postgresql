@@ -258,17 +258,25 @@ struct PostgresBinaryUtils {
     
     // MARK: - Date / Time
     
+    struct TimestampConstants {
+        static let referenceDate: Date = {
+            let components = DateComponents(year: 2000, month: 1, day: 1)
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = TimeZone(abbreviation: "UTC")!
+            return calendar.date(from: components)!
+        }()
+    }
+    
     static func parseTimetamp(value: UnsafeMutablePointer<Int8>, isInteger: Bool) -> Date {
         let interval: TimeInterval
         if isInteger {
-            let microseconds = parseInt64(value: value)
+            let microseconds = parseInt64(value: (value))
             interval = TimeInterval(microseconds) / 1_000_000
         } else {
             let seconds = parseFloat64(value :value)
             interval = TimeInterval(seconds)
         }
-        // 946684800 is timeIntervalSince1970 from January 1st 2000 (reference date)
-        return Date(timeIntervalSince1970: 946684800 + interval)
+        return Date(timeInterval: interval, since: TimestampConstants.referenceDate)
     }
     
     // MARK: - Interval
