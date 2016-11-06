@@ -210,7 +210,7 @@ class BinaryUtilsTests: XCTestCase {
         for (hexString, timestamp) in integerTimestampTests {
             var bytes = hexString.hexStringBytes
             let parsedDate = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: true)
-            XCTAssertEqualWithAccuracy(timestamp.timeIntervalSince1970, parsedDate.timeIntervalSince1970, accuracy: 0.01)
+            XCTAssertEqualWithAccuracy(timestamp.timeIntervalSince1970, parsedDate.timeIntervalSince1970, accuracy: 0.001)
         }
     }
     
@@ -225,7 +225,7 @@ class BinaryUtilsTests: XCTestCase {
         for (hexString, timestamp) in floatTimestampTests {
             var bytes = hexString.hexStringBytes
             let parsedDate = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: false)
-            XCTAssertEqualWithAccuracy(timestamp.timeIntervalSince1970, parsedDate.timeIntervalSince1970, accuracy: 0.01)
+            XCTAssertEqualWithAccuracy(timestamp.timeIntervalSince1970, parsedDate.timeIntervalSince1970, accuracy: 0.001)
         }
     }
     
@@ -234,7 +234,7 @@ class BinaryUtilsTests: XCTestCase {
             ("00000000000f42400000000000000000", ["00:00:01", "0:0:1"]),
             ("00000000000000000000000000000000", ["00:00:00", "0:0:0"]),
             ("0000000000000000000000020000002d", ["3 years 9 mons 2 days"]),
-            ("0000000000b8fb960000000100000011", ["1 year 5 mons 1 day 00:00:12.12303", "1 year 5 mons 1 day 0:0:12.12303"]),
+            ("0000000000b8fb960000000100000011", ["1 year 5 mons 1 day 00:00:12.12303", "1 year 5 mons 1 day 0:0:12.123"]),
             ("0000000000000000000000000000000c", ["1 year"]),
             ("00000000000000000000000000000018", ["2 years"]),
             ("00000000000000000000000100000000", ["1 day"]),
@@ -258,7 +258,7 @@ class BinaryUtilsTests: XCTestCase {
             ("3ff00000000000000000000000000000", ["00:00:01", "0:0:1"]),
             ("00000000000000000000000000000000", ["00:00:00", "0:0:0"]),
             ("0000000000000000000000020000002d", ["3 years 9 mons 2 days"]),
-            ("40283efdc9c4da900000000100000011", ["1 year 5 mons 1 day 00:00:12.12303", "1 year 5 mons 1 day 0:0:12.12303"]),
+            ("40283efdc9c4da900000000100000011", ["1 year 5 mons 1 day 00:00:12.12303", "1 year 5 mons 1 day 0:0:12.123"]),
             ("0000000000000000000000000000000c", ["1 year"]),
             ("00000000000000000000000000000018", ["2 years"]),
             ("00000000000000000000000100000000", ["1 day"]),
