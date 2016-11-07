@@ -7,7 +7,7 @@ extension PostgreSQL.Database {
         do {
             let postgreSQL = PostgreSQL.Database(
                 host: "127.0.0.1",
-                port: "5432",
+                port: 5432,
                 dbname: "test",
                 user: "postgres",
                 password: ""
