@@ -4,7 +4,9 @@
     import CPostgreSQLMac
 #endif
 
-public final class Connection {
+
+
+public final class Connection: ConnInfoInitializable {
     public typealias ConnectionPointer = OpaquePointer
     public var configuration: Configuration?
     private(set) var connection: ConnectionPointer!
@@ -15,32 +17,29 @@ public final class Connection {
         }
         return false
     }
-    
-    public init(conninfo: String) throws {
-        self.connection = PQconnectdb(conninfo)
+
+    public init(conninfo: ConnInfo) throws {
+        let string: String
+        
+        switch conninfo {
+        case .raw(let ci):
+            string = ci
+        case .params(let params):
+            var ci = ""
+            
+            params.forEach { (key, value) in
+                ci += "\(key)='\(value)'"
+            }
+        
+            string = ci
+        case .basic(host: let host, port: let port, database: let database, user: let user, password: let password):
+            string = "host='\(host)' port='\(port)' dbname='\(database)' user='\(user)' password='\(password)' client_encoding='UTF8'"
+        }
+        
+        self.connection = PQconnectdb(string)
         if !self.connected {
             throw DatabaseError.cannotEstablishConnection(error)
         }
-    }
-    
-    public convenience init(params: [String: String]) throws {
-        var conninfo = ""
-        
-        params.forEach { (key, value) in
-            conninfo += "\(key)='\(value)'"
-        }
-        
-        try self.init(conninfo: conninfo)
-    }
-    
-    public convenience init(
-        host: String = "localhost",
-        port: Int = 5432,
-        dbname: String,
-        user: String,
-        password: String
-    ) throws {
-        try self.init(conninfo: "host='\(host)' port='\(port)' dbname='\(dbname)' user='\(user)' password='\(password)' client_encoding='UTF8'")
     }
     
     @discardableResult

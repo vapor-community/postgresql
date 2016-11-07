@@ -18,33 +18,16 @@ enum DataFormat : Int32 {
     case binary = 1
 }
 
-public class Database {
+public final class Database: ConnInfoInitializable {
     // MARK: - Properties
-    
-    private let host: String
-    private let port: Int
-    private let dbname: String
-    private let user: String
-    private let password: String
+    public let conninfo: ConnInfo
     
     // MARK: - Init
-
-    public init(
-        host: String = "localhost",
-        port: Int = 5432,
-        dbname: String,
-        user: String,
-        password: String
-    ) {
-        self.host = host
-        self.port = port
-        self.dbname = dbname
-        self.user = user
-        self.password = password
+    public init(conninfo: ConnInfo) throws {
+        self.conninfo = conninfo
     }
     
     // MARK: - Connection
-
     @discardableResult
     public func execute(_ query: String, _ values: [Node]? = [], on connection: Connection? = nil) throws -> [[String: Node]] {
         guard !query.isEmpty else {
@@ -57,6 +40,6 @@ public class Database {
     }
 
     public func makeConnection() throws -> Connection {
-        return try Connection(host: self.host, port: self.port, dbname: self.dbname, user: self.user, password: self.password)
+        return try Connection(conninfo: conninfo)
     }
 }
