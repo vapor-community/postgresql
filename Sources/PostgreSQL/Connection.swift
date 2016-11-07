@@ -22,7 +22,17 @@ public final class Connection {
             throw DatabaseError.cannotEstablishConnection(error)
         }
     }
-
+    
+    public convenience init(params: [String: String]) throws {
+        var conninfo = ""
+        
+        params.forEach { (key, value) in
+            conninfo += "\(key)='\(value)'"
+        }
+        
+        try self.init(conninfo: conninfo)
+    }
+    
     public convenience init(
         host: String = "localhost",
         port: Int = 5432,
