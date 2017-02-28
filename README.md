@@ -51,6 +51,21 @@ public enum Value {
 }
 ```
 
+### Listen and Notify
+
+```swift
+try postgreSQL.listen(to: "test_channel") { notification in
+    print(notification.channel)
+    print(notification.payload)
+}
+
+// Allow set up time for LISTEN
+sleep(1)
+
+try postgreSQL.notify(channel: "test_channel", payload: "test_payload")
+
+```
+
 ### Connection
 
 Each call to `execute()` creates a new connection to the PostgreSQL database. This ensures thread safety since a single connection cannot be used on more than one thread.
