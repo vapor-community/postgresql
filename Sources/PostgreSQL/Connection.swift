@@ -22,17 +22,11 @@ public final class Connection: ConnInfoInitializable {
         let string: String
         
         switch conninfo {
-        case .raw(let ci):
-            string = ci
+        case .raw(let info):
+            string = info
         case .params(let params):
-            var ci = ""
-            
-            params.forEach { (key, value) in
-                ci += "\(key)='\(value)'"
-            }
-        
-            string = ci
-        case .basic(host: let host, port: let port, database: let database, user: let user, password: let password):
+            string = params.map({ (key, value) in "\(key)='\(value)'" }).reduce("", +)
+        case .basic(let host, let port, let database, let user, let password):
             string = "host='\(host)' port='\(port)' dbname='\(database)' user='\(user)' password='\(password)' client_encoding='UTF8'"
         }
         
