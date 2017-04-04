@@ -1,8 +1,4 @@
-#if os(Linux)
-    import CPostgreSQLLinux
-#else
-    import CPostgreSQLMac
-#endif
+import CPostgreSQL
 
 public enum ConnInfo {
     case raw(String)
