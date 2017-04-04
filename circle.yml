@@ -1,8 +1,8 @@
 dependencies:
   pre:
-    - sudo -u postgres createuser user_testing 
+    - sudo -u postgres createuser user_testing
     - createdb test
 
 test:
   override:
-    - eval "$(curl -sL swift.vapor.sh/ci)"
+    - eval "$(curl -sL swift.vapor.sh/ci-3.1)"
