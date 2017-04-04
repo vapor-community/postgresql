@@ -7,7 +7,7 @@ protocol Bindable {
 
 extension Node: Bindable {
     var postgresBindingData: ([Int8]?, OID?, DataFormat) {
-        switch self {
+        switch wrapped {
         case .null:
             // PQexecParams converts nil pointer to NULL.
             // see: https://www.postgresql.org/docs/9.1/static/libpq-exec.html
@@ -38,9 +38,14 @@ extension Node: Bindable {
         case .object(_):
             print("Unsupported Node type for PostgreSQL binding, everything except for .object is supported.")
             return (nil, nil, .string)
+
+        default:
+            return (nil, nil, .string)
         }
     }
-    
+}
+
+extension StructuredData {
     var postgresArrayElementString: String {
         switch self {
         case .null:
@@ -69,6 +74,9 @@ extension Node: Bindable {
         case .object(_):
             print("Unsupported Node array type for PostgreSQL binding, everything except for .object is supported.")
             return "NULL"
+
+        default:
+            return ""
         }
     }
 }
