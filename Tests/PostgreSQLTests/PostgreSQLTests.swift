@@ -123,7 +123,7 @@ class PostgreSQLTests: XCTestCase {
             try postgreSQL.execute("DROP TABLE IF EXISTS parameterization")
             try postgreSQL.execute("CREATE TABLE parameterization (d FLOAT8, i INT, s VARCHAR(16), u INT)")
             
-            try postgreSQL.execute("INSERT INTO parameterization VALUES ($1, $2, $3, $4)", [.null, .null, "life".makeNode(), .null], on: nil)
+            try postgreSQL.execute("INSERT INTO parameterization VALUES ($1, $2, $3, $4)", [.null, .null, "life".makeNode(in: nil), .null], on: nil)
 
             try postgreSQL.execute("INSERT INTO parameterization VALUES (3.14, NULL, 'pi', NULL)")
             try postgreSQL.execute("INSERT INTO parameterization VALUES (NULL, NULL, 'life', 42)")
@@ -210,7 +210,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, int2 int2, int4 int4, int8 int8)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1, $2, $3)", [row.0.makeNode(), row.1.makeNode(), row.2.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1, $2, $3)", [row.0.makeNode(in: nil), row.1.makeNode(in: nil), row.2.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -223,7 +223,7 @@ class PostgreSQLTests: XCTestCase {
             let int4 = resultRow["int4"]
             XCTAssertNotNil(int4?.int)
             XCTAssertEqual(int4!.int!, Int(rows[i].1))
-            
+
             let int8 = resultRow["int8"]
             XCTAssertNotNil(int8?.double)
             XCTAssertEqual(int8!.double!, Double(rows[i].2))
@@ -243,7 +243,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, float4 float4, float8 float8)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1, $2)", [row.0.makeNode(), row.1.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1, $2)", [row.0.makeNode(in: nil), row.1.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -275,7 +275,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, numeric numeric)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -301,7 +301,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, json json, jsonb jsonb)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1, $2)", [row.makeNode(), row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1, $2)", [row.makeNode(in: nil), row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -337,7 +337,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, interval interval)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row[0].makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row[0].makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -359,7 +359,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, point point)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -381,7 +381,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, lseg lseg)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -404,7 +404,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, path path)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -426,7 +426,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, box box)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -449,7 +449,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, polygon polygon)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -471,7 +471,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, circle circle)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -497,7 +497,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, inet inet)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -523,7 +523,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, cidr cidr)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -552,7 +552,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, macaddr macaddr)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -580,7 +580,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, bits bit(5))")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -610,7 +610,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, bits bit varying)")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
@@ -658,11 +658,6 @@ class PostgreSQLTests: XCTestCase {
         for resultRow in result {
             let value = resultRow["oid"]
             XCTAssertNotNil(value)
-            
-            guard case .bytes(_) = value! else {
-                XCTFail("Result should be in bytes")
-                return
-            }
         }
     }
 }
