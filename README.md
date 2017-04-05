@@ -1,17 +1,19 @@
 # PostgreSQL for Swift
 
+[![Swift](http://img.shields.io/badge/swift-3.0-brightgreen.svg)](https://swift.org)
+[![Build Status](https://travis-ci.org/vapor/postgresql.svg?branch=master)](https://travis-ci.org/vapor/postgresql)
+
 A Swift wrapper for PostgreSQL.
 
 - [x] Thread-Safe
 - [x] Prepared Statements
 - [x] Tested
 
-This wrapper uses the latest PostgreSQL fetch API to enable performant prepared statements and output bindings. 
+This wrapper uses the latest PostgreSQL fetch API to enable performant prepared statements and output bindings. Data is sent to and received from the PostgreSQL server in its native data type without converting to and from strings.
 
-The Swift wrappers around the PostgreSQL's C structs and pointers automatically manage closing connections and deallocating memeory. Additionally, the PostgreSQL library API is used to perform thread safe, performant queries to the database.
+The Swift wrappers around the PostgreSQL's C structs and pointers automatically manage closing connections and deallocating memory. Additionally, the PostgreSQL library API is used to perform thread safe, performant queries to the database.
 
-
-## Examples
+## 📖 Examples
 
 ### Connecting to the Database
 
@@ -62,7 +64,7 @@ let result = try postgreSQL.execute("SELECT LAST_INSERTED_ID() as id", [], conne
 
 No need to worry about closing the connection.
 
-## Building
+## 🚀 Building
 
 ### macOS
 
@@ -72,9 +74,6 @@ Install PostgreSQL
 brew install postgresql
 brew link postgresql
 brew services start postgresql
-
-// to stop 
-brew services stop postgresql
 ```
 
 ### Linux
@@ -87,14 +86,12 @@ sudo apt-get install postgresql postgresql-contrib libpq-dev
 psql -h dbhost -U username dbname
 ```
 
-`swift build` should work normally.
+Use `vapor build` or `swift build`.
 
 ## Fluent
 
-This wrapper was created to power [Fluent](https://github.com/qutheory/fluent), an ORM for Swift. 
+This wrapper was created to power [Fluent](https://github.com/qutheory/fluent), an [ORM](https://en.wikipedia.org/wiki/Object-relational_mapping) for Swift.
 
-## 👥 Authors
+## 👥 Contributors
 
-Made by [Prince Ugwuh](https://twitter.com/Prince2k3) a member of Qutheory community.
-
-
+Maintained by [Steven Roebert](https://github.com/sroebert), [Nate Bird](https://twitter.com/natesbird), [Prince Ugwuh](https://twitter.com/Prince2k3), and other members of the Vapor community.

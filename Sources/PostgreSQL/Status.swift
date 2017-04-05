@@ -1,10 +1,4 @@
-
-#if os(Linux)
-    import CPostgreSQLLinux
-#else
-    import CPostgreSQLMac
-#endif
-
+import CPostgreSQL
 
 extension Database {
     public enum Status {

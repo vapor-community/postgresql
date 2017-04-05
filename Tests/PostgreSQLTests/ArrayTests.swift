@@ -30,15 +30,15 @@ class ArrayTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, int_array int[])")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let intArray = resultRow["int_array"]
-            XCTAssertNotNil(intArray?.nodeArray)
-            XCTAssertEqual(intArray!.nodeArray!.flatMap { $0.int }, rows[i])
+            XCTAssertNotNil(intArray?.array)
+            XCTAssertEqual(intArray!.array!.flatMap { $0.int }, rows[i])
         }
     }
     
@@ -54,15 +54,15 @@ class ArrayTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, string_array text[])")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let stringArray = resultRow["string_array"]
-            XCTAssertNotNil(stringArray?.nodeArray)
-            XCTAssertEqual(stringArray!.nodeArray!.flatMap { $0.string }, rows[i])
+            XCTAssertNotNil(stringArray?.array)
+            XCTAssertEqual(stringArray!.array!.flatMap { $0.string }, rows[i])
         }
     }
     
@@ -79,15 +79,15 @@ class ArrayTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, bool_array bool[])")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let boolArray = resultRow["bool_array"]
-            XCTAssertNotNil(boolArray?.nodeArray)
-            XCTAssertEqual(boolArray!.nodeArray!.flatMap { $0.bool }, rows[i])
+            XCTAssertNotNil(boolArray?.array)
+            XCTAssertEqual(boolArray!.array!.flatMap { $0.bool }, rows[i])
         }
     }
     
@@ -103,18 +103,15 @@ class ArrayTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, byte_array bytea[])")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let byteArray = resultRow["byte_array"]
-            XCTAssertNotNil(byteArray?.nodeArray)
-            XCTAssertEqual(byteArray!.nodeArray!.flatMap { node in
-                guard case .bytes(_) = node else {
-                    return nil
-                }
+            XCTAssertNotNil(byteArray?.array)
+            XCTAssertEqual(byteArray!.array!.flatMap { node in
                 return node
             }, rows[i])
         }
@@ -132,17 +129,17 @@ class ArrayTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, int_array int[])")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.map { try $0.makeNode() }.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.map { try $0.makeNode(in: nil) }.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let intArray = resultRow["int_array"]
-            XCTAssertNotNil(intArray?.nodeArray)
-            XCTAssertEqual(intArray!.nodeArray!.count, rows[i].count)
-            XCTAssertEqual(intArray!.nodeArray!.flatMap { $0.int }, [])
-            XCTAssertEqual(intArray!.nodeArray!.flatMap { $0.isNull ? Node.null : nil }.count, rows[i].count)
+            XCTAssertNotNil(intArray?.array)
+            XCTAssertEqual(intArray!.array!.count, rows[i].count)
+            XCTAssertEqual(intArray!.array!.flatMap { $0.int }, [])
+            XCTAssertEqual(intArray!.array!.flatMap { $0.isNull ? Node.null : nil }.count, rows[i].count)
         }
     }
     
@@ -158,7 +155,7 @@ class ArrayTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, int_array int[][])")
         for row in rows {
-            let node = try Node.array(row.map { try $0.makeNode() })
+            let node = try Node.array(row.map { try $0.makeNode(in: nil) })
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [node])
         }
         
@@ -166,9 +163,9 @@ class ArrayTests: XCTestCase {
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let intArray = resultRow["int_array"]
-            XCTAssertNotNil(intArray?.nodeArray)
+            XCTAssertNotNil(intArray?.array)
             
-            let result = intArray!.nodeArray!.flatMap { $0.nodeArray?.flatMap { $0.int } }
+            let result = intArray!.array!.flatMap { $0.array?.flatMap { $0.int } }
             for (i, rowArray) in rows[i].enumerated() {
                 XCTAssertEqual(result[i], rowArray)
             }
@@ -188,15 +185,15 @@ class ArrayTests: XCTestCase {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, int_array int[])")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode()])
+            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let intArray = resultRow["int_array"]
-            XCTAssertNotNil(intArray?.nodeArray)
-            XCTAssertEqual(intArray!.nodeArray!, rows[i])
+            XCTAssertNotNil(intArray?.array)
+            XCTAssertEqual(intArray!.array!, rows[i])
         }
     }
 }

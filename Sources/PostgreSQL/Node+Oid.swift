@@ -1,8 +1,4 @@
-#if os(Linux)
-    import CPostgreSQLLinux
-#else
-    import CPostgreSQLMac
-#endif
+import CPostgreSQL
 import Foundation
 
 /// Oid values can be found in the following file:
