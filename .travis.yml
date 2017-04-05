@@ -9,10 +9,11 @@ matrix:
     - os: osx
       osx_image: xcode8.3
 install:
-  - rm -rf /usr/local/var/postgres && initdb /usr/local/var/postgres -E utf8
+  - "[ $TRAVIS_OS_NAME = osx ] && rm -rf /usr/local/var/postgres && initdb /usr/local/var/postgres -E utf8"
   - "[ $TRAVIS_OS_NAME = osx ] && pg_ctl -D /usr/local/var/postgres start && sleep 3 || true"
-  - psql -U postgres -c "create extension postgis"
+  - "[ $TRAVIS_OS_NAME = osx ] && sudo -u postgres createuser -s -p 5432 postgres &>/dev/null"
   - psql -U postgres -c 'CREATE DATABASE test;'
+  - psql -U postgres -c "create extension postgis;"
 script:
   - eval "$(curl -sL https://swift.vapor.sh/ci-3.1)"
   - eval "$(curl -sL https://swift.vapor.sh/codecov)"
