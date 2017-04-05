@@ -9,6 +9,7 @@ matrix:
     - os: osx
       osx_image: xcode8.3
 install:
+  - "[ $TRAVIS_OS_NAME = osx ] && brew services start postgresql || true"
   - psql -U postgres -c 'CREATE DATABASE test;'
 script:
   - eval "$(curl -sL https://swift.vapor.sh/ci-3.1)"
