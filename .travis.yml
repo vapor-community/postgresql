@@ -13,7 +13,7 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pg_ctl -D /usr/local/var/postgres start && sleep 3 || true; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sudo -u travis createuser -s -p 5432 postgres; fi
   - psql -U postgres -c 'create database test;'
-  - psql -U postgres -c 'create extension postgis;'
+  # - psql -U postgres -c 'create extension postgis;'
 script:
   - eval "$(curl -sL https://swift.vapor.sh/ci-3.1)"
   - eval "$(curl -sL https://swift.vapor.sh/codecov)"
