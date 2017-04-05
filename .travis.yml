@@ -7,7 +7,7 @@ matrix:
       services:
         - postgresql
       addons:
-          postgresql: "9.5"
+          postgresql: "9.6"
     - os: osx
       osx_image: xcode8.3
 install:
