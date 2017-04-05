@@ -1,8 +1,4 @@
-#if os(Linux)
-    import CPostgreSQLLinux
-#else
-    import CPostgreSQLMac
-#endif
+import CPostgreSQL
 
 class Result {
     typealias Pointer = OpaquePointer

@@ -1,10 +1,4 @@
-#if os(Linux)
-    import CPostgreSQLLinux
-#else
-    import CPostgreSQLMac
-#endif
-
-
+import CPostgreSQL
 
 public final class Connection: ConnInfoInitializable {
     public typealias ConnectionPointer = OpaquePointer
@@ -20,7 +14,7 @@ public final class Connection: ConnInfoInitializable {
 
     public init(conninfo: ConnInfo) throws {
         let string: String
-        
+
         switch conninfo {
         case .raw(let info):
             string = info
@@ -29,33 +23,33 @@ public final class Connection: ConnInfoInitializable {
         case .basic(let host, let port, let database, let user, let password):
             string = "host='\(host)' port='\(port)' dbname='\(database)' user='\(user)' password='\(password)' client_encoding='UTF8'"
         }
-        
+
         self.connection = PQconnectdb(string)
         if !self.connected {
             throw DatabaseError.cannotEstablishConnection(error)
         }
     }
-    
+
     @discardableResult
     public func execute(_ query: String, _ values: [Node]? = []) throws -> [[String: Node]] {
         guard !query.isEmpty else {
             throw DatabaseError.noQuery
         }
-        
+
         let values = values ?? []
-        
+
         var types: [Oid] = []
         types.reserveCapacity(values.count)
-        
+
         var paramValues: [[Int8]?] = []
         paramValues.reserveCapacity(values.count)
-        
+
         var lengths: [Int32] = []
         lengths.reserveCapacity(values.count)
-        
+
         var formats: [Int32] = []
         formats.reserveCapacity(values.count)
-        
+
         for value in values {
             let (bytes, oid, format) = value.postgresBindingData
             paramValues.append(bytes)
@@ -63,7 +57,7 @@ public final class Connection: ConnInfoInitializable {
             lengths.append(Int32(bytes?.count ?? 0))
             formats.append(format.rawValue)
         }
-        
+
         let res: Result.Pointer = PQexecParams(
             connection, query,
             Int32(values.count),
@@ -74,11 +68,11 @@ public final class Connection: ConnInfoInitializable {
             formats,
             DataFormat.binary.rawValue
         )
-        
+
         defer {
             PQclear(res)
         }
-        
+
         switch Database.Status(result: res) {
         case .nonFatalError, .fatalError, .unknown:
             throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)))
@@ -110,28 +104,28 @@ public final class Connection: ConnInfoInitializable {
         guard let s = PQerrorMessage(connection) else {
             return ""
         }
-        return String(cString: s) 
+        return String(cString: s)
     }
 
     deinit {
         try? close()
     }
-    
+
     // MARK: - Load Configuration
-    
+
     private func getConfiguration() throws -> Configuration {
         if let configuration = self.configuration {
             return configuration
         }
-        
+
         let hasIntegerDatetimes = getBooleanParameterStatus(key: "integer_datetimes", default: true)
-        
+
         let configuration = Configuration(hasIntegerDatetimes: hasIntegerDatetimes)
         self.configuration = configuration
-        
+
         return configuration
     }
-    
+
     private func getBooleanParameterStatus(key: String, `default` defaultValue: Bool = false) -> Bool {
         guard let value = PQparameterStatus(connection, "integer_datetimes") else {
             return defaultValue
