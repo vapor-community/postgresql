@@ -16,5 +16,5 @@ install:
     - psql -U postgres -c 'CREATE DATABASE test;'
 
 script:
-  - eval "$(curl -sL swift.vapor.sh/ci-3.1)"
-  - eval "$(curl -sL swift.vapor.sh/codecov)"
+  - eval "$(curl -sL https://swift.vapor.sh/ci-3.1)"
+  - eval "$(curl -sL https://swift.vapor.sh/codecov)"
