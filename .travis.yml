@@ -9,12 +9,11 @@ matrix:
       addons:
           postgresql: "9.5"
     - os: osx
-      osx_image: xcode8.3
+      osx_image: xcode8
 install:
     - "[ $TRAVIS_OS_NAME = osx ] && pg_ctl -D /usr/local/var/postgres start && sleep 3 || true"
     - "[ $TRAVIS_OS_NAME = osx ] && createuser -s postgres || true"
     - psql -U postgres -c 'CREATE DATABASE test;'
-
 script:
   - eval "$(curl -sL https://swift.vapor.sh/ci-3.1)"
   - eval "$(curl -sL https://swift.vapor.sh/codecov)"
