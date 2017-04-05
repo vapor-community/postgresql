@@ -3,16 +3,12 @@ matrix:
     - os: linux
       dist: trusty
       sudo: required
-      services:
-        - postgresql
       addons:
         postgresql: "9.6"
     - os: osx
       osx_image: xcode8.3
-      addons:
-        postgresql: "9.6"
 install:
-  - psql -U postgres -c 'CREATE DATABASE test;'
+  - sudo psql -U postgres -c 'CREATE DATABASE test;'
 script:
   - eval "$(curl -sL https://swift.vapor.sh/ci-3.1)"
   - eval "$(curl -sL https://swift.vapor.sh/codecov)"
