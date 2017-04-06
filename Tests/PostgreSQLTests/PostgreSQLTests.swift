@@ -35,7 +35,7 @@ class PostgreSQLTests: XCTestCase {
     override func setUp() {
         postgreSQL = PostgreSQL.Database.makeTestConnection()
     }
-    
+
     func testConnectionFailure() throws {
         let database = try PostgreSQL.Database(
             host: "127.0.0.1",
@@ -44,22 +44,22 @@ class PostgreSQLTests: XCTestCase {
             user: "postgres",
             password: ""
         )
-        
+
         try XCTAssertThrowsError(database.makeConnection()) { error in
             switch error {
             case DatabaseError.cannotEstablishConnection(_):
                 break
-            
+
             default:
                 XCTFail("Invalid error")
             }
         }
     }
-    
+
     func testConnection() throws {
         let connection = try postgreSQL.makeConnection()
         XCTAssertTrue(connection.connected)
-        
+
         try connection.reset()
         try connection.close()
         XCTAssertFalse(connection.connected)
@@ -124,7 +124,7 @@ class PostgreSQLTests: XCTestCase {
         do {
             try postgreSQL.execute("DROP TABLE IF EXISTS parameterization")
             try postgreSQL.execute("CREATE TABLE parameterization (d FLOAT8, i INT, s VARCHAR(16), u INT)")
-            
+
             try postgreSQL.execute("INSERT INTO parameterization VALUES ($1, $2, $3, $4)", [.null, .null, "life".makeNode(in: nil), .null], on: nil)
 
             try postgreSQL.execute("INSERT INTO parameterization VALUES (3.14, NULL, 'pi', NULL)")
@@ -170,37 +170,37 @@ class PostgreSQLTests: XCTestCase {
             XCTFail("Testing parameterization failed: \(error)")
         }
     }
-    
+
     func testDataType() throws {
         let data: [UInt8] = [1, 2, 3, 4, 5, 0, 6, 7, 8, 9, 0]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (bar BYTEA)")
         try postgreSQL.execute("INSERT INTO foo VALUES ($1)", [.bytes(data)])
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo").first
         XCTAssertNotNil(result)
-        
+
         let resultBytesNode = result!["bar"]
         XCTAssertNotNil(resultBytesNode)
-        
+
         XCTAssertEqual(resultBytesNode!, .bytes(data))
     }
-    
+
     func testCustomType() throws {
         let uuidString = "7fe1743a-96a8-417c-b6c2-c8bb20d3017e"
         let dateString = "2016-10-24 23:04:19.223"
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (uuid UUID, date TIMESTAMP WITHOUT TIME ZONE)")
         try postgreSQL.execute("INSERT INTO foo VALUES ($1, $2)", [.string(uuidString), .string(dateString)])
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo").first
         XCTAssertNotNil(result)
         XCTAssertEqual(result!["uuid"]?.string, uuidString)
         XCTAssertEqual(result!["date"]?.string, dateString)
     }
-    
+
     func testInts() throws {
         let rows: [(Int16, Int32, Int64)] = [
             (1, 2, 3),
@@ -208,20 +208,20 @@ class PostgreSQLTests: XCTestCase {
             (Int16.min, Int32.min, Int64.min),
             (Int16.max, Int32.max, Int64.max),
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, int2 int2, int4 int4, int8 int8)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1, $2, $3)", [row.0.makeNode(in: nil), row.1.makeNode(in: nil), row.2.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let int2 = resultRow["int2"]
             XCTAssertNotNil(int2?.int)
             XCTAssertEqual(int2!.int!, Int(rows[i].0))
-            
+
             let int4 = resultRow["int4"]
             XCTAssertNotNil(int4?.int)
             XCTAssertEqual(int4!.int!, Int(rows[i].1))
@@ -231,7 +231,7 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(int8!.double!, Double(rows[i].2))
         }
     }
-    
+
     func testFloats() throws {
         let rows: [(Float32, Float64)] = [
             (1, 2),
@@ -241,26 +241,26 @@ class PostgreSQLTests: XCTestCase {
             (Float32.min, Float64.min),
             (Float32.max, Float64.max),
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, float4 float4, float8 float8)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1, $2)", [row.0.makeNode(in: nil), row.1.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let float4 = resultRow["float4"]
             XCTAssertNotNil(float4?.double)
             XCTAssertEqual(float4!.double!, Double(rows[i].0))
-            
+
             let float8 = resultRow["float8"]
             XCTAssertNotNil(float8?.double)
             XCTAssertEqual(float8!.double!, Double(rows[i].1))
         }
     }
-    
+
     func testNumeric() throws {
         let rows: [String] = [
             "0",
@@ -273,13 +273,13 @@ class PostgreSQLTests: XCTestCase {
             "100000001000000000000.0000000001000000001",
             "NaN",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, numeric numeric)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -288,7 +288,7 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(numeric!.string!, rows[i])
         }
     }
-    
+
     func testJSON() throws {
         let rows: [String] = [
             "{}",
@@ -299,26 +299,26 @@ class PostgreSQLTests: XCTestCase {
             "[1, 2, 3, 4, 5, 6]",
             "{\"foo\": \"bar\"}",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, json json, jsonb jsonb)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1, $2)", [row.makeNode(in: nil), row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let json = resultRow["json"]
             XCTAssertNotNil(json?.string)
             XCTAssertEqual(json!.string!, rows[i])
-            
+
             let jsonb = resultRow["jsonb"]
             XCTAssertNotNil(jsonb?.string)
             XCTAssertEqual(jsonb!.string!, rows[i])
         }
     }
-    
+
     func testIntervals() throws {
         let rows: [[String]] = [
             ["00:00:01","0:0:1"],
@@ -335,13 +335,13 @@ class PostgreSQLTests: XCTestCase {
             ["-1 days"],
             ["-11 mons +1 day"],
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, interval interval)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row[0].makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -350,20 +350,20 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertTrue(rows[i].contains(interval!.string!))
         }
     }
-    
+
     func testPoints() throws {
         let rows = [
             "(1.2,3.4)",
             "(-1.2,-3.4)",
             "(123.456,-298.135)",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, point point)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -372,20 +372,20 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(point!.string!, rows[i])
         }
     }
-    
+
     func testLineSegments() throws {
         let rows = [
             "[(1.2,3.4),(-1.2,-3.4)]",
             "[(-1.2,-3.4),(123.467,-298.135)]",
             "[(123.47,-238.123),(1.2,3.4)]",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, lseg lseg)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -394,7 +394,7 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(lseg!.string!, rows[i])
         }
     }
-    
+
     func testPaths() throws {
         let rows = [
             "[(1.2,3.4),(-1.2,-3.4),(123.67,-598.35)]",
@@ -402,13 +402,13 @@ class PostgreSQLTests: XCTestCase {
             "((123.47,-235.35),(1.2,3.4))",
             "[(1.2,3.4)]",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, path path)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -417,20 +417,20 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(path!.string!, rows[i])
         }
     }
-    
+
     func testBoxes() throws {
         let rows = [
             "(1.2,3.4),(-1.2,-3.4)",
             "(13.467,-3.4),(-1.2,-598.35)",
             "(12.467,3.4),(1.2,-358.15)",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, box box)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -439,7 +439,7 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(box!.string!, rows[i])
         }
     }
-    
+
     func testPolygons() throws {
         let rows = [
             "((1.2,3.4),(-1.2,-3.4),(123.46,-358.25))",
@@ -447,13 +447,13 @@ class PostgreSQLTests: XCTestCase {
             "((123.467,-98.123),(1.2,3.4))",
             "((1.2,3.4))",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, polygon polygon)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -462,20 +462,20 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(polygon!.string!, rows[i])
         }
     }
-    
+
     func testCircles() throws {
         let rows = [
             "<(1.2,3.4),456.7>",
             "<(-1.2,-3.4),98>",
             "<(123.67,-598.15),0.123>",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, circle circle)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -484,7 +484,7 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(circle!.string!, rows[i])
         }
     }
-    
+
     func testInets() throws {
         let rows = [
             "192.168.100.128",
@@ -495,13 +495,13 @@ class PostgreSQLTests: XCTestCase {
             "0.0.0.0",
             "127.0.0.1",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, inet inet)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -510,7 +510,7 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(inet!.string!, rows[i])
         }
     }
-    
+
     func testCidrs() throws {
         let rows = [
             "192.168.100.128/32",
@@ -521,13 +521,13 @@ class PostgreSQLTests: XCTestCase {
             "0.0.0.0/32",
             "127.0.0.1/32",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, cidr cidr)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -536,7 +536,7 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(cidr!.string!, rows[i])
         }
     }
-    
+
     func testMacAddresses() throws {
         let rows = [
             "5a:92:79:a1:ce:1a",
@@ -550,13 +550,13 @@ class PostgreSQLTests: XCTestCase {
             "d8:39:78:9e:f6:fe",
             "58:ff:b8:e9:85:30",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, macaddr macaddr)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -565,7 +565,7 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(macaddr!.string!, rows[i])
         }
     }
-    
+
     func testBitStrings() throws {
         let rows = [
             "01010",
@@ -578,13 +578,13 @@ class PostgreSQLTests: XCTestCase {
             "00001",
             "10000",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, bits bit(5))")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -593,7 +593,7 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(bits!.string!, rows[i])
         }
     }
-    
+
     func testVarBitStrings() throws {
         let rows = [
             "0",
@@ -608,13 +608,13 @@ class PostgreSQLTests: XCTestCase {
             "00000000000",
             "1111111111",
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, bits bit varying)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
@@ -623,7 +623,7 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(bits!.string!, rows[i])
         }
     }
-    
+
     func testUnsupportedObject() throws {
         let rows: [Node] = [
             .object(["1":1, "2":2]),
@@ -631,13 +631,13 @@ class PostgreSQLTests: XCTestCase {
             .object([:]),
             .object(["1":1]),
         ]
-        
+
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, text text)")
         for row in rows {
             try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row])
         }
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, rows.count)
         for resultRow in result {
@@ -646,7 +646,7 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertEqual(value, Node.null)
         }
     }
-    
+
     func testUnsupportedOID() throws {
         try postgreSQL.execute("DROP TABLE IF EXISTS foo")
         try postgreSQL.execute("CREATE TABLE foo (id serial, oid oid)")
@@ -654,7 +654,7 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, 2)", nil)
         try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, 123)", nil)
         try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, 456)", nil)
-        
+
         let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
         XCTAssertEqual(result.count, 4)
         for resultRow in result {
@@ -662,38 +662,38 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertNotNil(value)
         }
     }
-	
-	func testNotification() throws {
-		let testExpectation = expectation(description: "Receive notification")
-		
-		postgreSQL.listen(to: "test_channel1") { notification in
-			XCTAssertEqual(notification.channel, "test_channel1")
-			XCTAssertNil(notification.payload)
-			
-			testExpectation.fulfill()
-		}
-		
-		sleep(1)
-		
-		try postgreSQL.notify(channel: "test_channel1", payload: nil)
-		
-		waitForExpectations(timeout: 5)
-	}
-	
-	func testNotificationWithPayload() throws {
-		let testExpectation = expectation(description: "Receive notification with payload")
-		
-		postgreSQL.listen(to: "test_channel2") { notification in
-			XCTAssertEqual(notification.channel, "test_channel2")
-			XCTAssertEqual(notification.payload, "test_payload")
-			
-			testExpectation.fulfill()
-		}
-		
-		sleep(1)
-		
-		try postgreSQL.notify(channel: "test_channel2", payload: "test_payload")
-		
-		waitForExpectations(timeout: 5)
-	}
+
+    func testNotification() throws {
+        let testExpectation = expectation(description: "Receive notification")
+
+        postgreSQL.listen(to: "test_channel1") { notification in
+            XCTAssertEqual(notification.channel, "test_channel1")
+            XCTAssertNil(notification.payload)
+
+            testExpectation.fulfill()
+        }
+
+        sleep(1)
+
+        try postgreSQL.notify(channel: "test_channel1", payload: nil)
+
+        waitForExpectations(timeout: 5)
+    }
+
+    func testNotificationWithPayload() throws {
+        let testExpectation = expectation(description: "Receive notification with payload")
+
+        postgreSQL.listen(to: "test_channel2") { notification in
+            XCTAssertEqual(notification.channel, "test_channel2")
+            XCTAssertEqual(notification.payload, "test_payload")
+
+            testExpectation.fulfill()
+        }
+
+        sleep(1)
+
+        try postgreSQL.notify(channel: "test_channel2", payload: "test_payload")
+
+        waitForExpectations(timeout: 5)
+    }
 }
