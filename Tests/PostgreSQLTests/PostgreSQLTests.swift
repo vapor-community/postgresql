@@ -36,35 +36,6 @@ class PostgreSQLTests: XCTestCase {
         postgreSQL = PostgreSQL.Database.makeTestConnection()
     }
 
-    func testConnectionFailure() throws {
-        let database = try PostgreSQL.Database(
-            host: "127.0.0.1",
-            port: 5432,
-            database: "some_long_db_name_that_does_not_exist",
-            user: "postgres",
-            password: ""
-        )
-
-        try XCTAssertThrowsError(database.makeConnection()) { error in
-            switch error {
-            case DatabaseError.cannotEstablishConnection(_):
-                break
-
-            default:
-                XCTFail("Invalid error")
-            }
-        }
-    }
-
-    func testConnection() throws {
-        let connection = try postgreSQL.makeConnection()
-        XCTAssertTrue(connection.connected)
-
-        try connection.reset()
-        try connection.close()
-        XCTAssertFalse(connection.connected)
-    }
-
     func testSelectVersion() {
         do {
             let results = try postgreSQL.execute("SELECT version(), version(), 1337, 3.14, 'what up', NULL")
