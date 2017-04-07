@@ -6,7 +6,7 @@ extension PostgreSQL.Database {
     static func makeTestConnection() -> PostgreSQL.Database {
         do {
             let postgreSQL = try PostgreSQL.Database(
-                host: "127.0.0.1",
+                hostname: "127.0.0.1",
                 port: 5432,
                 database: "test",
                 user: "postgres",
@@ -24,7 +24,7 @@ extension PostgreSQL.Database {
             print("You must configure PostgreSQL to run with the following configuration: ")
             print("    user: 'postgres'")
             print("    password: '' // (empty)")
-            print("    host: '127.0.0.1'")
+            print("    hostname: '127.0.0.1'")
             print("    database: 'test'")
             print()
             print()
@@ -40,26 +40,26 @@ extension String {
         guard let characters = cString(using: .utf8) else {
             return []
         }
-        
+
         var data: [Int8] = []
         data.reserveCapacity(characters.count / 2)
-        
+
         var byteChars: [CChar] = [0, 0, 0]
         for i in stride(from: 0, to: characters.count - 1, by: 2) {
             byteChars[0] = characters[i]
             byteChars[1] = characters[i+1]
             let byteValue = UInt8(strtol(byteChars, nil, 16))
-            
+
             guard byteValue != 0 || (byteChars[0] == 48 && byteChars[1] == 48) else {
                 return []
             }
-            
+
             data.append(Int8(bitPattern: byteValue))
         }
-        
+
         return data
     }
-    
+
     var postgreSQLParsedDate: Date {
         struct Formatter {
             static let `static`: DateFormatter = {
