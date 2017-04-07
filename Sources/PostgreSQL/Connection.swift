@@ -139,3 +139,14 @@ public final class Connection: ConnInfoInitializable {
         return String(cString: value) == "on"
     }
 }
+
+extension Connection {
+    @discardableResult
+    public func execute(_ query: String, _ representable: [NodeRepresentable]) throws -> Node {
+        let values = try representable.map {
+            return try $0.makeNode(in: PostgreSQLContext.shared)
+        }
+
+        return try execute(query, values)
+    }
+}
