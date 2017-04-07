@@ -1,5 +1,6 @@
 import XCTest
-import PostgreSQL
+import CPostgreSQL
+@testable import PostgreSQL
 
 class ConnectionTests: XCTestCase {
     static let allTests = [
@@ -14,6 +15,7 @@ class ConnectionTests: XCTestCase {
         postgreSQL = PostgreSQL.Database.makeTestConnection()
 
         let connection = try postgreSQL.makeConnection()
+        XCTAssert(connection.status() == CONNECTION_OK)
         XCTAssertTrue(connection.isConnected)
 
         try connection.reset()
