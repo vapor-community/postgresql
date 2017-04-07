@@ -50,7 +50,7 @@ public final class Database: ConnInfoInitializable {
                 try self.execute("LISTEN \(channel)", on: connection)
 
                 while true {
-                    if connection.isClosed == true {
+                    if connection.isConnected == false {
                         throw DatabaseError.cannotEstablishConnection(connection.lastError)
                     }
 

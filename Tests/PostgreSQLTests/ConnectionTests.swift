@@ -14,11 +14,11 @@ class ConnectionTests: XCTestCase {
         postgreSQL = PostgreSQL.Database.makeTestConnection()
 
         let connection = try postgreSQL.makeConnection()
-        XCTAssertFalse(connection.isClosed)
+        XCTAssertTrue(connection.isConnected)
 
         try connection.reset()
         try connection.close()
-        XCTAssertTrue(connection.isClosed)
+        XCTAssertFalse(connection.isConnected)
     }
 
     func testConnInfoParams() {
@@ -37,7 +37,7 @@ class ConnectionTests: XCTestCase {
 
     func testConnectionFailure() throws {
         let database = try PostgreSQL.Database(
-            host: "127.0.0.1",
+            hostname: "127.0.0.1",
             port: 5432,
             database: "some_long_db_name_that_does_not_exist",
             user: "postgres",
@@ -57,7 +57,7 @@ class ConnectionTests: XCTestCase {
     func testConnectionSuccess() throws {
         do {
             let database = try PostgreSQL.Database(
-                host: "127.0.0.1",
+                hostname: "127.0.0.1",
                 port: 5432,
                 database: "test",
                 user: "postgres",
