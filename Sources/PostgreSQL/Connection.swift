@@ -90,7 +90,7 @@ public final class Connection: ConnInfoInitializable {
 
     public func reset() throws {
         guard self.isConnected else {
-            throw PostgreSQLError(.connection_failure, reason: "Connection failed.")
+            throw PostgreSQLError(.connection_failure, reason: lastError)
         }
 
         PQreset(cConnection)
@@ -99,7 +99,7 @@ public final class Connection: ConnInfoInitializable {
 
     public func close() throws {
         guard self.isConnected else {
-            throw PostgreSQLError(.connection_does_not_exist, reason: "Connection does not exist.")
+            throw PostgreSQLError(.connection_does_not_exist, reason: lastError)
         }
 
         PQfinish(cConnection)
