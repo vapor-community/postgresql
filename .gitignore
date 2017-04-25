@@ -4,4 +4,5 @@ Sources/main.swift
 Packages
 Database
 *.xcodeproj
+Package.pins
 
