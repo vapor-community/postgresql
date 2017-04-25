@@ -28,6 +28,7 @@ class PostgreSQLTests: XCTestCase {
         ("testUnsupportedObject", testUnsupportedObject),
         ("testNotification", testNotification),
         ("testNotificationWithPayload", testNotificationWithPayload),
+        ("testQueryToNode", testQueryToNode)
     ]
 
     var postgreSQL: PostgreSQL.Database!
@@ -666,5 +667,10 @@ class PostgreSQLTests: XCTestCase {
         try postgreSQL.notify(channel: "test_channel2", payload: "test_payload")
 
         waitForExpectations(timeout: 5)
+    }
+
+    func testQueryToNode() throws {
+        let results: Node = try postgreSQL.makeConnection().execute("SELECT version()", [])
+        XCTAssertNotNil(results.array?[0].object?["version"]?.string)
     }
 }

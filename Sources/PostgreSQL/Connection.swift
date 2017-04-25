@@ -147,6 +147,7 @@ extension Connection {
             return try $0.makeNode(in: PostgreSQLContext.shared)
         }
 
-        return try execute(query, values)
+        let result: [[String: Node]] = try execute(query, values)
+        return try Node.array(result.map { try $0.makeNode(in: PostgreSQLContext.shared) })
     }
 }
