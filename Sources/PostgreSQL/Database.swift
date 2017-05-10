@@ -1,57 +1,54 @@
 import CPostgreSQL
 import Core
 
-public enum DatabaseError: Error {
-    case cannotEstablishConnection(String)
-    case indexOutOfRange
-    case columnNotFound
-    case invalidSQL(message: String)
-    case noQuery
-    case noResults
-}
-
-enum DataFormat : Int32 {
-    case string = 0
-    case binary = 1
-}
-
 public final class Database: ConnInfoInitializable {
+    
+    // MARK: - Enums
+    
+    public enum Error: Swift.Error {
+        case cannotEstablishConnection(String)
+        case indexOutOfRange
+        case columnNotFound
+        case invalidSQL(message: String)
+        case noQuery
+        case noResults
+    }
+    
+    enum DataFormat : Int32 {
+        case string = 0
+        case binary = 1
+    }
+    
     // MARK: - Properties
-    public let conninfo: ConnInfo
+    
+    public let connInfo: ConnInfo
 
     // MARK: - Init
-    public init(conninfo: ConnInfo) throws {
-        self.conninfo = conninfo
+    
+    public init(connInfo: ConnInfo) throws {
+        self.connInfo = connInfo
     }
 
-    // MARK: - Connection
+    /// Creates a new connection to
+    /// the database that can be reused between executions.
+    ///
+    /// The connection will close automatically when deinitialized.
     public func makeConnection() throws -> Connection {
-        return try Connection(conninfo: conninfo)
+        return try Connection(connInfo: connInfo)
     }
 
-    // MARK: - Query Execution
-    @discardableResult
-    public func execute(_ query: String, _ values: [Node]? = [], on connection: Connection? = nil) throws -> [[String: Node]] {
-        guard !query.isEmpty else {
-            throw DatabaseError.noQuery
-        }
-
-        let connection = try connection ?? makeConnection()
-
-        return try connection.execute(query, values)
-    }
-
-    // MARK: - LISTEN
-    public func listen(to channel: String, callback: @escaping (Notification) -> Void) {
+    // MARK: - LISTEN/NOTIFY
+    
+    public func listen(toChannel channel: String, on connection: Connection? = nil, callback: @escaping (Notification) -> Void) {
         background {
             do {
-                let connection = try self.makeConnection()
+                let connection = try connection ?? self.makeConnection()
 
-                try self.execute("LISTEN \(channel)", on: connection)
+                try connection.execute("LISTEN \(channel)")
 
                 while true {
                     if connection.isConnected == false {
-                        throw DatabaseError.cannotEstablishConnection(connection.lastError)
+                        throw Database.Error.cannotEstablishConnection(connection.lastError)
                     }
 
                     PQconsumeInput(connection.cConnection)
@@ -70,16 +67,15 @@ public final class Database: ConnInfoInitializable {
             }
         }
     }
-
-    // MARK: - NOTIFY
-    public func notify(channel: String, payload: String?, on connection: Connection? = nil) throws {
+    
+    public func notify(channel: String, payload: String? = nil, on connection: Connection? = nil) throws {
         let connection = try connection ?? makeConnection()
 
         if let payload = payload {
-            try execute("NOTIFY \(channel), '\(payload)'", on: connection)
+            try connection.execute("NOTIFY \(channel), '\(payload)'")
         }
         else {
-            try execute("NOTIFY \(channel)", on: connection)
+            try connection.execute("NOTIFY \(channel)")
         }
     }
 }

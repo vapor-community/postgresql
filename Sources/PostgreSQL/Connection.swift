@@ -5,19 +5,18 @@ import CPostgreSQL
 // Do not try to make a copy of a PostgreSQL structure.
 // There is no guarantee that such a copy will be usable.
 public final class Connection: ConnInfoInitializable {
-    public let cConnection: OpaquePointer
-    public var configuration: Configuration?
+    public typealias CConnection = OpaquePointer
+    
+    public let cConnection: CConnection
+    
     public var isConnected: Bool {
-        if PQstatus(cConnection) == CONNECTION_OK {
-            return true
-        }
-        return false
+        return PQstatus(cConnection) == CONNECTION_OK
     }
 
-    public init(conninfo: ConnInfo) throws {
+    public init(connInfo: ConnInfo) throws {
         let string: String
 
-        switch conninfo {
+        switch connInfo {
         case .raw(let info):
             string = info
         case .params(let params):
@@ -26,16 +25,16 @@ public final class Connection: ConnInfoInitializable {
             string = "host='\(hostname)' port='\(port)' dbname='\(database)' user='\(user)' password='\(password)' client_encoding='UTF8'"
         }
 
-        self.cConnection = PQconnectdb(string)
-        if isConnected == false {
-            throw DatabaseError.cannotEstablishConnection(lastError)
+        cConnection = PQconnectdb(string)
+        if !isConnected {
+            throw Database.Error.cannotEstablishConnection(lastError)
         }
     }
 
     @discardableResult
     public func execute(_ query: String, _ values: [Node]? = []) throws -> [[String: Node]] {
         guard !query.isEmpty else {
-            throw DatabaseError.noQuery
+            throw Database.Error.noQuery
         }
 
         let values = values ?? []
@@ -63,12 +62,11 @@ public final class Connection: ConnInfoInitializable {
         let res: Result.Pointer = PQexecParams(
             cConnection, query,
             Int32(values.count),
-            types, paramValues.map {
-                UnsafePointer<Int8>($0)
-            },
+            types,
+            paramValues.map { UnsafePointer<Int8>($0) },
             lengths,
             formats,
-            DataFormat.binary.rawValue
+            Database.DataFormat.binary.rawValue
         )
 
         defer {
@@ -77,7 +75,7 @@ public final class Connection: ConnInfoInitializable {
 
         switch Database.Status(result: res) {
         case .nonFatalError, .fatalError, .unknown:
-            throw DatabaseError.invalidSQL(message: String(cString: PQresultErrorMessage(res)))
+            throw Database.Error.invalidSQL(message: String(cString: PQresultErrorMessage(res)))
         case .tuplesOk:
             let configuration = try getConfiguration()
             return Result(configuration: configuration, pointer: res).parsed
@@ -86,12 +84,12 @@ public final class Connection: ConnInfoInitializable {
         }
     }
 
-    public func status() -> ConnStatusType {
+    public var status: ConnStatusType {
         return PQstatus(cConnection)
     }
 
     public func reset() throws {
-        guard self.isConnected else {
+        guard isConnected else {
             throw PostgreSQLError(.connection_failure, reason: lastError)
         }
 
@@ -99,7 +97,7 @@ public final class Connection: ConnInfoInitializable {
     }
 
     public func close() throws {
-        guard self.isConnected else {
+        guard isConnected else {
             throw PostgreSQLError(.connection_does_not_exist, reason: lastError)
         }
 
@@ -118,7 +116,10 @@ public final class Connection: ConnInfoInitializable {
         try? close()
     }
 
-    // MARK: - Load Configuration
+    // MARK: - Configuration
+    
+    private var configuration: Configuration?
+    
     private func getConfiguration() throws -> Configuration {
         if let configuration = self.configuration {
             return configuration
