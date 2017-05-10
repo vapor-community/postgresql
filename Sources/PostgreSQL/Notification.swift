@@ -1,19 +1,19 @@
-public struct Notification {
-    let channel: String
-    let payload: String?
-    let pid: Int
-}
+import CPostgreSQL
 
-extension Notification {
-    init(relname: UnsafeMutablePointer<Int8>, extra: UnsafeMutablePointer<Int8>, be_pid: Int32) {
-        self.channel = String(cString: relname)
-        self.pid = Int(be_pid)
+public struct Notification {
+    public let pid: Int
+    public let channel: String
+    public let payload: String?
+    
+    init(pgNotify: PGnotify) {
+        channel = String(cString: pgNotify.relname)
+        pid = Int(pgNotify.be_pid)
         
-        if (extra.pointee != 0) {
-            self.payload = String(cString: extra)
+        if pgNotify.extra != nil {
+            payload = String(cString: pgNotify.extra)
         }
         else {
-            self.payload = nil
+            payload = nil
         }
     }
 }

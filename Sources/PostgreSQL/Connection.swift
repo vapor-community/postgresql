@@ -1,17 +1,19 @@
 import CPostgreSQL
+import Dispatch
 
 // This structure represents a handle to one database connection.
 // It is used for almost all PostgreSQL functions.
 // Do not try to make a copy of a PostgreSQL structure.
 // There is no guarantee that such a copy will be usable.
 public final class Connection: ConnInfoInitializable {
+    
+    // MARK: - CConnection
+    
     public typealias CConnection = OpaquePointer
     
     public let cConnection: CConnection
     
-    public var isConnected: Bool {
-        return PQstatus(cConnection) == CONNECTION_OK
-    }
+    // MARK: - Init
 
     public init(connInfo: ConnInfo) throws {
         let string: String
@@ -30,6 +32,14 @@ public final class Connection: ConnInfoInitializable {
             throw Database.Error.cannotEstablishConnection(lastError)
         }
     }
+    
+    // MARK: - Deinit
+    
+    deinit {
+        try? close()
+    }
+    
+    // MARK: - Execute
 
     @discardableResult
     public func execute(_ query: String, _ values: [Node]? = []) throws -> [[String: Node]] {
@@ -83,6 +93,12 @@ public final class Connection: ConnInfoInitializable {
             return []
         }
     }
+    
+    // MARK: - Connection Status
+    
+    public var isConnected: Bool {
+        return PQstatus(cConnection) == CONNECTION_OK
+    }
 
     public var status: ConnStatusType {
         return PQstatus(cConnection)
@@ -111,9 +127,55 @@ public final class Connection: ConnInfoInitializable {
         }
         return String(cString: errorMessage)
     }
+    
+    // MARK: - LISTEN/NOTIFY
+    
+    
+    /// Registers as a listener on a specific notification channel.
+    ///
+    /// - Parameters:
+    ///   - channel: The channel to register for.
+    ///   - queue: The queue to perform the listening on.
+    ///   - callback: Callback containing any received notification or error and a boolean which can be set to true to stop listening.
+    public func listen(toChannel channel: String, on queue: DispatchQueue = DispatchQueue.global(), callback: @escaping (Notification?, Error?, inout Bool) -> Void) {
+        queue.async {
+            var stop: Bool = false
+            
+            do {
+                try self.execute("LISTEN \(channel)")
 
-    deinit {
-        try? close()
+                while !stop {
+                    guard self.isConnected else {
+                        throw Database.Error.cannotEstablishConnection(self.lastError)
+                    }
+
+                    // Sleep to avoid looping continuously on cpu
+                    sleep(1)
+                    
+                    PQconsumeInput(self.cConnection)
+
+                    while !stop, let pgNotify = PQnotifies(self.cConnection) {
+                        let notification = Notification(pgNotify: pgNotify.pointee)
+
+                        callback(notification, nil, &stop)
+
+                        PQfreemem(pgNotify)
+                    }
+                }
+            }
+            catch {
+                callback(nil, error, &stop)
+            }
+        }
+    }
+    
+    public func notify(channel: String, payload: String? = nil) throws {
+        if let payload = payload {
+            try execute("NOTIFY \(channel), '\(payload)'")
+        }
+        else {
+            try execute("NOTIFY \(channel)")
+        }
     }
 
     // MARK: - Configuration
