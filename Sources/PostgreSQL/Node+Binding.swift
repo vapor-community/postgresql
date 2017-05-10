@@ -1,12 +1,17 @@
 import Foundation
 import Core
 
+enum BindableDataFormat : Int32 {
+    case string = 0
+    case binary = 1
+}
+
 protocol Bindable {
-    var postgresBindingData: ([Int8]?, OID?, Database.DataFormat) { get }
+    var postgresBindingData: ([Int8]?, OID?, BindableDataFormat) { get }
 }
 
 extension Node: Bindable {
-    var postgresBindingData: ([Int8]?, OID?, Database.DataFormat) {
+    var postgresBindingData: ([Int8]?, OID?, BindableDataFormat) {
         switch wrapped {
         case .null:
             // PQexecParams converts nil pointer to NULL.
@@ -82,13 +87,13 @@ extension StructuredData {
 }
 
 extension Bool: Bindable {
-    var postgresBindingData: ([Int8]?, OID?, Database.DataFormat) {
+    var postgresBindingData: ([Int8]?, OID?, BindableDataFormat) {
         return ([self ? 1 : 0], .bool, .binary)
     }
 }
 
 extension Int: Bindable {
-    var postgresBindingData: ([Int8]?, OID?, Database.DataFormat) {
+    var postgresBindingData: ([Int8]?, OID?, BindableDataFormat) {
         let count = MemoryLayout.size(ofValue: self)
         
         let oid: OID
@@ -110,7 +115,7 @@ extension Int: Bindable {
 }
 
 extension Double: Bindable {
-    var postgresBindingData: ([Int8]?, OID?, Database.DataFormat) {
+    var postgresBindingData: ([Int8]?, OID?, BindableDataFormat) {
         let count = MemoryLayout.size(ofValue: self)
         
         let oid: OID
@@ -130,7 +135,7 @@ extension Double: Bindable {
 }
 
 extension String: Bindable {
-    var postgresBindingData: ([Int8]?, OID?, Database.DataFormat) {
+    var postgresBindingData: ([Int8]?, OID?, BindableDataFormat) {
         return (utf8CString.array, .none, .string)
     }
 }

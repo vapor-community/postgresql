@@ -76,7 +76,7 @@ public final class Connection: ConnInfoInitializable {
             paramValues.map { UnsafePointer<Int8>($0) },
             lengths,
             formats,
-            Database.DataFormat.binary.rawValue
+            BindableDataFormat.binary.rawValue
         )
 
         defer {

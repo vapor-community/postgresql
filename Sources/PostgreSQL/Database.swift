@@ -13,11 +13,6 @@ public final class Database: ConnInfoInitializable {
         case noResults
     }
     
-    enum DataFormat : Int32 {
-        case string = 0
-        case binary = 1
-    }
-    
     // MARK: - Properties
     
     public let connInfo: ConnInfo
