@@ -12,7 +12,6 @@ public struct PostgreSQLError: Error {
 
 extension PostgreSQLError {
     public enum Code: String {
-        case successful_completion = "00000"
         // Class 01 — Warning
         case warning = "01000"
         case dynamic_result_sets_returned = "0100C"
@@ -298,30 +297,21 @@ extension PostgreSQLError {
 // MARK: Inits
 
 extension PostgreSQLError {
-    public init(_ connection: Connection) {
-        let raw = String(cString: PQerrorMessage(connection.cConnection))
-
+    init(result: Result.Pointer, connection: Connection) {
+        let raw = String(cString: PQresultErrorField(result, 0))
+        let code = Code(rawValue: raw) ?? .unknown
+        self.init(code: code, connection: connection)
+    }
+    
+    init(code: Code, connection: Connection) {
         let message: String
         if let error = PQerrorMessage(connection.cConnection) {
             message = String(cString: error)
         } else {
             message = "Unknown"
         }
-
-        self.init(
-            rawCode: raw,
-            reason: message
-        )
-    }
-
-    public init(_ code: Code, reason: String) {
-        self.code = code
-        self.reason = reason
-    }
-
-    public init(rawCode: String, reason: String) {
-        self.code = Code(rawValue: rawCode) ?? .unknown
-        self.reason = reason
+        
+        self.init(code: code, reason: message)
     }
 }
 
@@ -357,10 +347,10 @@ extension PostgreSQLError: Debuggable {
                 "Fix the invalid syntax in your query",
                 "If an ORM has generated this error, report the issue to its GitHub page"
             ]
-        case .connection_exception, .connection_does_not_exist, .connection_failure:
+        case .connection_exception, .connection_failure:
             return [
-                "Increase the `wait_timeout`",
-                "Increase the `max_allowed_packet`"
+                "Make sure you have entered the correct username and password",
+                "Make sure the database has been created"
             ]
         default:
             return []
@@ -368,17 +358,10 @@ extension PostgreSQLError: Debuggable {
     }
 
     public var stackOverflowQuestions: [String] {
-        switch code {
-        case .syntax_error:
-            return [
-            ]
-        default:
-            return []
-        }
+        return []
     }
 
     public var documentationLinks: [String] {
-        return [
-        ]
+        return []
     }
 }

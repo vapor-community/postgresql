@@ -2,17 +2,6 @@ import CPostgreSQL
 
 public final class Database: ConnInfoInitializable {
     
-    // MARK: - Enums
-    
-    public enum Error: Swift.Error {
-        case cannotEstablishConnection(String)
-        case indexOutOfRange
-        case columnNotFound
-        case invalidSQL(message: String)
-        case noQuery
-        case noResults
-    }
-    
     // MARK: - Properties
     
     public let connInfo: ConnInfo
