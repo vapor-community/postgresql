@@ -128,8 +128,44 @@ public final class Connection: ConnInfoInitializable {
         return String(cString: errorMessage)
     }
     
-    // MARK: - LISTEN/NOTIFY
+    // MARK: - Transaction
     
+    public enum TransactionIsolationLevel {
+        case readCommitted
+        case repeatableRead
+        case serializable
+        
+        var sqlName: String {
+            switch self {
+            case .readCommitted:
+                return "READ COMMITTED"
+                
+            case .repeatableRead:
+                return "REPEATABLE READ"
+                
+            case .serializable:
+                return "SERIALIZABLE"
+            }
+        }
+    }
+    
+    public func transaction<R>(isolationLevel: TransactionIsolationLevel = .readCommitted, closure: () throws -> R) throws -> R {
+        try execute("BEGIN TRANSACTION ISOLATION LEVEL \(isolationLevel.sqlName)")
+
+        let value: R
+        do {
+            value = try closure()
+        } catch {
+            // rollback changes and then rethrow the error
+            try execute("ROLLBACK")
+            throw error
+        }
+
+        try execute("COMMIT")
+        return value
+    }
+    
+    // MARK: - LISTEN/NOTIFY
     
     /// Registers as a listener on a specific notification channel.
     ///
