@@ -54,7 +54,7 @@ extension Float64 {
 /// Most information for parsing binary formats has been retrieved from the following links:
 /// - https://www.postgresql.org/docs/9.6/static/datatype.html (Data types)
 /// - https://github.com/postgres/postgres/tree/55c3391d1e6a201b5b891781d21fe682a8c64fe6/src/backend/utils/adt (Backend sending code)
-struct PostgresBinaryUtils {
+struct BinaryUtils {
     
     // MARK: - Formatters
     
@@ -76,8 +76,8 @@ struct PostgresBinaryUtils {
         private static let time: DateFormatter = formatter(format: "HH:mm:ss.SSS", forceUTC: true)
         private static let timetz: DateFormatter = formatter(format: "HH:mm:ss.SSSX", forceUTC: false)
         
-        static func dateFormatter(for oid: OID) -> DateFormatter {
-            switch oid {
+        static func dateFormatter(for type: FieldType.Supported) -> DateFormatter {
+            switch type {
             case .date:
                 return date
             case .time:
@@ -133,11 +133,13 @@ struct PostgresBinaryUtils {
         return uint8Bytes
     }
     
-    static func valueToByteArray<T>(_ value: inout T) -> [Int8] {
+    static func valueToBytes<T>(_ value: inout T) -> (UnsafeMutablePointer<Int8>, Int) {
         let size = MemoryLayout.size(ofValue: value)
         return withUnsafePointer(to: &value) { valuePointer in
             return valuePointer.withMemoryRebound(to: Int8.self, capacity: size) { bytePointer in
-                return UnsafeBufferPointer(start: bytePointer, count: size).array
+                let bytes: UnsafeMutablePointer<Int8> = UnsafeMutablePointer.allocate(capacity: size)
+                bytes.assign(from: bytePointer, count: size)
+                return (bytes, size)
             }
         }
     }

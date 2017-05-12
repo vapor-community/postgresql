@@ -297,12 +297,6 @@ extension PostgreSQLError {
 // MARK: Inits
 
 extension PostgreSQLError {
-    init(result: Result.Pointer, connection: Connection) {
-        let raw = String(cString: PQresultErrorField(result, 0))
-        let code = Code(rawValue: raw) ?? .unknown
-        self.init(code: code, connection: connection)
-    }
-    
     init(code: Code, connection: Connection) {
         let message: String
         if let error = PQerrorMessage(connection.cConnection) {

@@ -40,54 +40,45 @@ public final class Connection: ConnInfoInitializable {
     // MARK: - Execute
 
     @discardableResult
-    public func execute(_ query: String, _ values: [Node]? = []) throws -> [[String: Node]] {
-        let values = values ?? []
-
+    public func execute(_ query: String, _ values: [Node] = []) throws -> Node {
+        let binds = values.map { $0.bind(with: configuration) }
+        return try execute(query, binds)
+    }
+    
+    @discardableResult
+    public func execute(_ query: String, _ binds: [Bind]) throws -> Node {
         var types: [Oid] = []
-        types.reserveCapacity(values.count)
-
-        var paramValues: [[Int8]?] = []
-        paramValues.reserveCapacity(values.count)
-
-        var lengths: [Int32] = []
-        lengths.reserveCapacity(values.count)
-
+        types.reserveCapacity(binds.count)
+        
         var formats: [Int32] = []
-        formats.reserveCapacity(values.count)
-
-        for value in values {
-            let (bytes, oid, format) = value.postgresBindingData
-            paramValues.append(bytes)
-            types.append(oid?.rawValue ?? 0)
-            lengths.append(Int32(bytes?.count ?? 0))
-            formats.append(format.rawValue)
+        formats.reserveCapacity(binds.count)
+        
+        var values: [UnsafePointer<Int8>?] = []
+        values.reserveCapacity(binds.count)
+        
+        var lengths: [Int32] = []
+        lengths.reserveCapacity(binds.count)
+        
+        for bind in binds {
+            
+            types.append(bind.type.oid ?? 0)
+            formats.append(bind.format.rawValue)
+            values.append(bind.bytes)
+            lengths.append(Int32(bind.length))
         }
-
-        let res: Result.Pointer = PQexecParams(
+        
+        let resultPointer: Result.Pointer = PQexecParams(
             cConnection, query,
-            Int32(values.count),
+            Int32(binds.count),
             types,
-            paramValues.map { UnsafePointer<Int8>($0) },
+            values,
             lengths,
             formats,
-            BindableDataFormat.binary.rawValue
+            Bind.Format.binary.rawValue
         )
-
-        defer {
-            PQclear(res)
-        }
-
-        switch Result.Status(result: res) {
-        case .nonFatalError, .fatalError, .badResponse, .emptyQuery, .unknown:
-            throw PostgreSQLError(result: res, connection: self)
-            
-        case .tuplesOk:
-            let configuration = try getConfiguration()
-            return Result(configuration: configuration, pointer: res).parsed
-            
-        default:
-            return []
-        }
+        
+        let result = Result(pointer: resultPointer, connection: self)
+        return try result.parseData()
     }
     
     // MARK: - Connection Status
@@ -220,18 +211,18 @@ public final class Connection: ConnInfoInitializable {
 
     // MARK: - Configuration
     
-    private var configuration: Configuration?
+    private var cachedConfiguration: Configuration?
     
-    private func getConfiguration() throws -> Configuration {
-        if let configuration = self.configuration {
+    public var configuration: Configuration {
+        if let configuration = cachedConfiguration {
             return configuration
         }
-
+        
         let hasIntegerDatetimes = getBooleanParameterStatus(key: "integer_datetimes", default: true)
-
+        
         let configuration = Configuration(hasIntegerDatetimes: hasIntegerDatetimes)
-        self.configuration = configuration
-
+        cachedConfiguration = configuration
+        
         return configuration
     }
 
@@ -249,8 +240,7 @@ extension Connection {
         let values = try representable.map {
             return try $0.makeNode(in: PostgreSQLContext.shared)
         }
-
-        let result: [[String: Node]] = try execute(query, values)
-        return try Node.array(result.map { try $0.makeNode(in: PostgreSQLContext.shared) })
+        
+        return try execute(query, values)
     }
 }
