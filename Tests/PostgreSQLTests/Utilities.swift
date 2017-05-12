@@ -3,7 +3,7 @@ import PostgreSQL
 import Foundation
 
 extension PostgreSQL.Database {
-    static func makeTestConnection() -> PostgreSQL.Database {
+    static func makeTest() -> PostgreSQL.Database {
         do {
             let postgreSQL = try PostgreSQL.Database(
                 hostname: "127.0.0.1",
@@ -12,7 +12,10 @@ extension PostgreSQL.Database {
                 user: "postgres",
                 password: ""
             )
-            try postgreSQL.execute("SELECT version()")
+            
+            let connection = try postgreSQL.makeConnection()
+            try connection.execute("SELECT version()")
+            
             return postgreSQL
         } catch {
             print()

@@ -156,7 +156,13 @@ public final class Connection: ConnInfoInitializable {
             pid = Int(pgNotify.be_pid)
             
             if pgNotify.extra != nil {
-                payload = String(cString: pgNotify.extra)
+                let string = String(cString: pgNotify.extra)
+                if !string.isEmpty {
+                    payload = string
+                }
+                else {
+                    payload = nil
+                }
             }
             else {
                 payload = nil

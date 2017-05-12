@@ -15,10 +15,12 @@ class ArrayTests: XCTestCase {
     var postgreSQL: PostgreSQL.Database!
 
     override func setUp() {
-        postgreSQL = PostgreSQL.Database.makeTestConnection()
+        postgreSQL = PostgreSQL.Database.makeTest()
     }
     
     func testIntArray() throws {
+        let conn = try postgreSQL.makeConnection()
+        
         let rows = [
             [1,2,3,4,5],
             [123],
@@ -27,13 +29,13 @@ class ArrayTests: XCTestCase {
             [-1,2,-3,4,-5,-1,2,-3,4,-5,-1,2,-3,4,-5,-1,2,-3,4,-5],
         ]
         
-        try postgreSQL.execute("DROP TABLE IF EXISTS foo")
-        try postgreSQL.execute("CREATE TABLE foo (id serial, int_array int[])")
+        try conn.execute("DROP TABLE IF EXISTS foo")
+        try conn.execute("CREATE TABLE foo (id serial, int_array int[])")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
+            try conn.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
-        let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
+        let result = try conn.execute("SELECT * FROM foo ORDER BY id ASC").array ?? []
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let intArray = resultRow["int_array"]
@@ -43,6 +45,8 @@ class ArrayTests: XCTestCase {
     }
     
     func testStringArray() throws {
+        let conn = try postgreSQL.makeConnection()
+        
         let rows = [
             ["A simple test string", "Another string", "", "Great testing skills"],
             [""],
@@ -51,13 +55,13 @@ class ArrayTests: XCTestCase {
             ["🙀", "👽", "👀", "🐶", "🐱", "😂", "👻", "👍", "🙉"],
         ]
         
-        try postgreSQL.execute("DROP TABLE IF EXISTS foo")
-        try postgreSQL.execute("CREATE TABLE foo (id serial, string_array text[])")
+        try conn.execute("DROP TABLE IF EXISTS foo")
+        try conn.execute("CREATE TABLE foo (id serial, string_array text[])")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
+            try conn.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
-        let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
+        let result = try conn.execute("SELECT * FROM foo ORDER BY id ASC").array ?? []
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let stringArray = resultRow["string_array"]
@@ -67,6 +71,8 @@ class ArrayTests: XCTestCase {
     }
     
     func testBoolArray() throws {
+        let conn = try postgreSQL.makeConnection()
+        
         let rows = [
             [true, false, true, true, false],
             [false],
@@ -76,13 +82,13 @@ class ArrayTests: XCTestCase {
             [false, true],
         ]
         
-        try postgreSQL.execute("DROP TABLE IF EXISTS foo")
-        try postgreSQL.execute("CREATE TABLE foo (id serial, bool_array bool[])")
+        try conn.execute("DROP TABLE IF EXISTS foo")
+        try conn.execute("CREATE TABLE foo (id serial, bool_array bool[])")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
+            try conn.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
-        let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
+        let result = try conn.execute("SELECT * FROM foo ORDER BY id ASC").array ?? []
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let boolArray = resultRow["bool_array"]
@@ -92,6 +98,8 @@ class ArrayTests: XCTestCase {
     }
     
     func testBytesArray() throws {
+        let conn = try postgreSQL.makeConnection()
+        
         let rows: [[Node]] = [
             [.bytes([0x00, 0x12, 0x00]), .bytes([]), .bytes([0x12, 0x54, 0x1f, 0xaa, 0x9a, 0xa8, 0xcd]), .bytes([0x00])],
             [.bytes([0x12, 0x34, 0x56, 0x78, 0x9A])],
@@ -100,13 +108,13 @@ class ArrayTests: XCTestCase {
             [.bytes([0x11, 0x00]), .bytes([0x22]), .bytes([0x33]), .bytes([0x44]), .bytes([0x55])],
         ]
         
-        try postgreSQL.execute("DROP TABLE IF EXISTS foo")
-        try postgreSQL.execute("CREATE TABLE foo (id serial, byte_array bytea[])")
+        try conn.execute("DROP TABLE IF EXISTS foo")
+        try conn.execute("CREATE TABLE foo (id serial, byte_array bytea[])")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
+            try conn.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
-        let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
+        let result = try conn.execute("SELECT * FROM foo ORDER BY id ASC").array ?? []
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let byteArray = resultRow["byte_array"]
@@ -118,6 +126,8 @@ class ArrayTests: XCTestCase {
     }
     
     func testUnsupportedObjectArray() throws {
+        let conn = try postgreSQL.makeConnection()
+        
         let rows: [[[String:Int]]] = [
             [["key":1],["key":2],["key":3],["key":4],["key":5]],
             [["key":123]],
@@ -126,13 +136,13 @@ class ArrayTests: XCTestCase {
             [["key":-1],["key":2],["key":-3],["key":4],["key":-5]],
         ]
         
-        try postgreSQL.execute("DROP TABLE IF EXISTS foo")
-        try postgreSQL.execute("CREATE TABLE foo (id serial, int_array int[])")
+        try conn.execute("DROP TABLE IF EXISTS foo")
+        try conn.execute("CREATE TABLE foo (id serial, int_array int[])")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.map { try $0.makeNode(in: nil) }.makeNode(in: nil)])
+            try conn.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.map { try $0.makeNode(in: nil) }.makeNode(in: nil)])
         }
         
-        let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
+        let result = try conn.execute("SELECT * FROM foo ORDER BY id ASC").array ?? []
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let intArray = resultRow["int_array"]
@@ -144,6 +154,8 @@ class ArrayTests: XCTestCase {
     }
     
     func test2DArray() throws {
+        let conn = try postgreSQL.makeConnection()
+        
         let rows = [
             [[1, 2], [3, 4], [5, 6]],
             [[1], [2], [3], [4]],
@@ -152,14 +164,14 @@ class ArrayTests: XCTestCase {
             [[1, 2, 3, 4], [5, 6, 7, 8]],
         ]
         
-        try postgreSQL.execute("DROP TABLE IF EXISTS foo")
-        try postgreSQL.execute("CREATE TABLE foo (id serial, int_array int[][])")
+        try conn.execute("DROP TABLE IF EXISTS foo")
+        try conn.execute("CREATE TABLE foo (id serial, int_array int[][])")
         for row in rows {
             let node = try Node.array(row.map { try $0.makeNode(in: nil) })
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [node])
+            try conn.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [node])
         }
         
-        let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
+        let result = try conn.execute("SELECT * FROM foo ORDER BY id ASC").array ?? []
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let intArray = resultRow["int_array"]
@@ -173,6 +185,8 @@ class ArrayTests: XCTestCase {
     }
     
     func testArrayWithNull() throws {
+        let conn = try postgreSQL.makeConnection()
+        
         let rows = [
             [1,Node.null,3,4,5],
             [123],
@@ -182,13 +196,13 @@ class ArrayTests: XCTestCase {
             [Node.null],
         ]
         
-        try postgreSQL.execute("DROP TABLE IF EXISTS foo")
-        try postgreSQL.execute("CREATE TABLE foo (id serial, int_array int[])")
+        try conn.execute("DROP TABLE IF EXISTS foo")
+        try conn.execute("CREATE TABLE foo (id serial, int_array int[])")
         for row in rows {
-            try postgreSQL.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
+            try conn.execute("INSERT INTO foo VALUES (DEFAULT, $1)", [row.makeNode(in: nil)])
         }
         
-        let result = try postgreSQL.execute("SELECT * FROM foo ORDER BY id ASC")
+        let result = try conn.execute("SELECT * FROM foo ORDER BY id ASC").array ?? []
         XCTAssertEqual(result.count, rows.count)
         for (i, resultRow) in result.enumerated() {
             let intArray = resultRow["int_array"]
