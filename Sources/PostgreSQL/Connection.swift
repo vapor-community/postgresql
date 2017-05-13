@@ -68,7 +68,8 @@ public final class Connection: ConnInfoInitializable {
         }
         
         let resultPointer: Result.Pointer = PQexecParams(
-            cConnection, query,
+            cConnection,
+            query,
             Int32(binds.count),
             types,
             values,
