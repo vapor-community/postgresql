@@ -709,11 +709,12 @@ class PostgreSQLTests: XCTestCase {
     }
 
     func testNotification() throws {
-        let conn = try postgreSQL.makeConnection()
+        let conn1 = try postgreSQL.makeConnection()
+        let conn2 = try postgreSQL.makeConnection()
         
         let testExpectation = expectation(description: "Receive notification")
 
-        conn.listen(toChannel: "test_channel1") { (notification, error, stop) in
+        conn1.listen(toChannel: "test_channel1") { (notification, error, stop) in
             XCTAssertEqual(notification?.channel, "test_channel1")
             XCTAssertNil(notification?.payload)
             XCTAssertNil(error)
@@ -724,17 +725,18 @@ class PostgreSQLTests: XCTestCase {
 
         sleep(1)
 
-        try conn.notify(channel: "test_channel1", payload: nil)
+        try conn2.notify(channel: "test_channel1", payload: nil)
 
         waitForExpectations(timeout: 5)
     }
 
     func testNotificationWithPayload() throws {
-        let conn = try postgreSQL.makeConnection()
+        let conn1 = try postgreSQL.makeConnection()
+        let conn2 = try postgreSQL.makeConnection()
         
         let testExpectation = expectation(description: "Receive notification with payload")
 
-        conn.listen(toChannel: "test_channel2") { (notification, error, stop) in
+        conn1.listen(toChannel: "test_channel2") { (notification, error, stop) in
             XCTAssertEqual(notification?.channel, "test_channel2")
             XCTAssertEqual(notification?.payload, "test_payload")
             XCTAssertNil(error)
@@ -745,7 +747,7 @@ class PostgreSQLTests: XCTestCase {
 
         sleep(1)
 
-        try conn.notify(channel: "test_channel2", payload: "test_payload")
+        try conn2.notify(channel: "test_channel2", payload: "test_payload")
 
         waitForExpectations(timeout: 5)
     }
