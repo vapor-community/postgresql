@@ -33,7 +33,7 @@ class BinaryUtilsTests: XCTestCase {
         var int16: Int16 = 123
         let convertedInt16: Int16 = withUnsafeMutablePointer(to: &int16) {
             $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: int16)) { value in
-                return PostgresBinaryUtils.convert(value)
+                return BinaryUtils.convert(value)
             }
         }
         XCTAssertEqual(int16, convertedInt16)
@@ -41,7 +41,7 @@ class BinaryUtilsTests: XCTestCase {
         var int32: Int32 = Int32.max
         let convertedInt32: Int32 = withUnsafeMutablePointer(to: &int32) {
             $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: int32)) { value in
-                return PostgresBinaryUtils.convert(value)
+                return BinaryUtils.convert(value)
             }
         }
         XCTAssertEqual(int32, convertedInt32)
@@ -49,7 +49,7 @@ class BinaryUtilsTests: XCTestCase {
         var uint64: UInt64 = UInt64.min
         let convertedUInt64: UInt64 = withUnsafeMutablePointer(to: &uint64) {
             $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: uint64)) { value in
-                return PostgresBinaryUtils.convert(value)
+                return BinaryUtils.convert(value)
             }
         }
         XCTAssertEqual(uint64, convertedUInt64)
@@ -57,7 +57,7 @@ class BinaryUtilsTests: XCTestCase {
         var double: Double = 123.456
         let convertedDouble: Double = withUnsafeMutablePointer(to: &double) {
             $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: double)) { value in
-                return PostgresBinaryUtils.convert(value)
+                return BinaryUtils.convert(value)
             }
         }
         XCTAssertEqual(double, convertedDouble)
@@ -65,7 +65,7 @@ class BinaryUtilsTests: XCTestCase {
         var uuid = UUID().uuid
         let convertedUUID: uuid_t = withUnsafeMutablePointer(to: &uuid) {
             $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: uuid)) { value in
-                return PostgresBinaryUtils.convert(value)
+                return BinaryUtils.convert(value)
             }
         }
         XCTAssertEqual(UUID(uuid: uuid), UUID(uuid: convertedUUID))
@@ -80,7 +80,7 @@ class BinaryUtilsTests: XCTestCase {
         
         for bytes in testByteArrays {
             var int8Bytes = bytes.map { Int8(bitPattern: $0) }
-            let parsedBytes = PostgresBinaryUtils.parseBytes(value: &int8Bytes, length: bytes.count)
+            let parsedBytes = BinaryUtils.parseBytes(value: &int8Bytes, length: bytes.count)
             XCTAssertEqual(bytes, parsedBytes)
         }
     }
@@ -96,7 +96,7 @@ class BinaryUtilsTests: XCTestCase {
         // Test null-terminated
         for string in testStrings {
             var stringData = Array(string.utf8CString)
-            let parsedString = PostgresBinaryUtils.parseString(value: &stringData, length: stringData.count - 1)
+            let parsedString = BinaryUtils.parseString(value: &stringData, length: stringData.count - 1)
             XCTAssertEqual(string, parsedString)
         }
         
@@ -104,7 +104,7 @@ class BinaryUtilsTests: XCTestCase {
         for string in testStrings {
             var stringData = Array(string.utf8CString)
             stringData.removeLast() // Remove NULL
-            let parsedString = PostgresBinaryUtils.parseString(value: &stringData, length: stringData.count)
+            let parsedString = BinaryUtils.parseString(value: &stringData, length: stringData.count)
             XCTAssertEqual(string, parsedString)
         }
     }
@@ -116,7 +116,7 @@ class BinaryUtilsTests: XCTestCase {
             var bigEndian = int.bigEndian
             let convertedInt: Int16 = withUnsafeMutablePointer(to: &bigEndian) {
                 $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: bigEndian)) { value in
-                    return PostgresBinaryUtils.parseInt16(value: value)
+                    return BinaryUtils.parseInt16(value: value)
                 }
             }
             XCTAssertEqual(int, convertedInt)
@@ -130,7 +130,7 @@ class BinaryUtilsTests: XCTestCase {
             var bigEndian = int.bigEndian
             let convertedInt: Int32 = withUnsafeMutablePointer(to: &bigEndian) {
                 $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: bigEndian)) { value in
-                    return PostgresBinaryUtils.parseInt32(value: value)
+                    return BinaryUtils.parseInt32(value: value)
                 }
             }
             XCTAssertEqual(int, convertedInt)
@@ -144,7 +144,7 @@ class BinaryUtilsTests: XCTestCase {
             var bigEndian = int.bigEndian
             let convertedInt: Int64 = withUnsafeMutablePointer(to: &bigEndian) {
                 $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: bigEndian)) { value in
-                    return PostgresBinaryUtils.parseInt64(value: value)
+                    return BinaryUtils.parseInt64(value: value)
                 }
             }
             XCTAssertEqual(int, convertedInt)
@@ -158,7 +158,7 @@ class BinaryUtilsTests: XCTestCase {
             var bigEndian = float.bigEndian
             let convertedFloat: Float32 = withUnsafeMutablePointer(to: &bigEndian) {
                 $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: bigEndian)) { value in
-                    return PostgresBinaryUtils.parseFloat32(value: value)
+                    return BinaryUtils.parseFloat32(value: value)
                 }
             }
             XCTAssertEqual(float, convertedFloat)
@@ -172,7 +172,7 @@ class BinaryUtilsTests: XCTestCase {
             var bigEndian = float.bigEndian
             let convertedFloat: Float64 = withUnsafeMutablePointer(to: &bigEndian) {
                 $0.withMemoryRebound(to: Int8.self, capacity: MemoryLayout.size(ofValue: bigEndian)) { value in
-                    return PostgresBinaryUtils.parseFloat64(value: value)
+                    return BinaryUtils.parseFloat64(value: value)
                 }
             }
             XCTAssertEqual(float, convertedFloat)
@@ -194,7 +194,7 @@ class BinaryUtilsTests: XCTestCase {
         
         for (hexString, numericString) in numericTests {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseNumeric(value: &bytes)
+            let parsedString = BinaryUtils.parseNumeric(value: &bytes)
             XCTAssertEqual(numericString, parsedString)
         }
     }
@@ -209,7 +209,7 @@ class BinaryUtilsTests: XCTestCase {
 
         for (hexString, timestamp) in integerTimestampTests {
             var bytes = hexString.hexStringBytes
-            let parsedDate = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: true)
+            let parsedDate = BinaryUtils.parseTimetamp(value: &bytes, isInteger: true)
             XCTAssertEqualWithAccuracy(timestamp.timeIntervalSince1970, parsedDate.timeIntervalSince1970, accuracy: 0.001)
         }
     }
@@ -224,7 +224,7 @@ class BinaryUtilsTests: XCTestCase {
 
         for (hexString, timestamp) in floatTimestampTests {
             var bytes = hexString.hexStringBytes
-            let parsedDate = PostgresBinaryUtils.parseTimetamp(value: &bytes, isInteger: false)
+            let parsedDate = BinaryUtils.parseTimetamp(value: &bytes, isInteger: false)
             XCTAssertEqualWithAccuracy(timestamp.timeIntervalSince1970, parsedDate.timeIntervalSince1970, accuracy: 0.001)
         }
     }
@@ -248,7 +248,7 @@ class BinaryUtilsTests: XCTestCase {
 
         for (hexString, intervals) in intervalTests {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseInterval(value: &bytes, timeIsInteger: true)
+            let parsedString = BinaryUtils.parseInterval(value: &bytes, timeIsInteger: true)
             XCTAssertTrue(intervals.contains(parsedString))
         }
     }
@@ -272,7 +272,7 @@ class BinaryUtilsTests: XCTestCase {
 
         for (hexString, intervals) in intervalTests {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseInterval(value: &bytes, timeIsInteger: false)
+            let parsedString = BinaryUtils.parseInterval(value: &bytes, timeIsInteger: false)
             XCTAssertTrue(intervals.contains(parsedString))
         }
     }
@@ -293,7 +293,7 @@ class BinaryUtilsTests: XCTestCase {
         
         for uuid in uuids {
             var bytes = uuid.replacingOccurrences(of: "-", with: "").hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseUUID(value: &bytes)
+            let parsedString = BinaryUtils.parseUUID(value: &bytes)
             XCTAssertEqual(uuid, parsedString)
         }
     }
@@ -307,7 +307,7 @@ class BinaryUtilsTests: XCTestCase {
         
         for (hexString, point) in points {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parsePoint(value: &bytes)
+            let parsedString = BinaryUtils.parsePoint(value: &bytes)
             XCTAssertEqual(point, parsedString)
         }
     }
@@ -321,7 +321,7 @@ class BinaryUtilsTests: XCTestCase {
         
         for (hexString, lineSegment) in lineSegments {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseLineSegment(value: &bytes)
+            let parsedString = BinaryUtils.parseLineSegment(value: &bytes)
             XCTAssertEqual(lineSegment, parsedString)
         }
     }
@@ -338,7 +338,7 @@ class BinaryUtilsTests: XCTestCase {
         
         for (hexString, path) in paths {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parsePath(value: &bytes)
+            let parsedString = BinaryUtils.parsePath(value: &bytes)
             XCTAssertEqual(path, parsedString)
         }
     }
@@ -352,7 +352,7 @@ class BinaryUtilsTests: XCTestCase {
         
         for (hexString, box) in boxes {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseBox(value: &bytes)
+            let parsedString = BinaryUtils.parseBox(value: &bytes)
             XCTAssertEqual(box, parsedString)
         }
     }
@@ -368,7 +368,7 @@ class BinaryUtilsTests: XCTestCase {
         
         for (hexString, polygon) in polygons {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parsePolygon(value: &bytes)
+            let parsedString = BinaryUtils.parsePolygon(value: &bytes)
             XCTAssertEqual(polygon, parsedString)
         }
     }
@@ -382,7 +382,7 @@ class BinaryUtilsTests: XCTestCase {
         
         for (hexString, point) in points {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseCircle(value: &bytes)
+            let parsedString = BinaryUtils.parseCircle(value: &bytes)
             XCTAssertEqual(point, parsedString)
         }
     }
@@ -407,7 +407,7 @@ class BinaryUtilsTests: XCTestCase {
         
         for (hexString, ipAddress) in ipAddressess {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseIPAddress(value: &bytes)
+            let parsedString = BinaryUtils.parseIPAddress(value: &bytes)
             XCTAssertEqual(ipAddress, parsedString)
         }
     }
@@ -428,7 +428,7 @@ class BinaryUtilsTests: XCTestCase {
         
         for macAddress in macAddressess {
             var bytes = macAddress.replacingOccurrences(of: ":", with: "").hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseMacAddress(value: &bytes)
+            let parsedString = BinaryUtils.parseMacAddress(value: &bytes)
             XCTAssertEqual(macAddress, parsedString)
         }
     }
@@ -450,7 +450,7 @@ class BinaryUtilsTests: XCTestCase {
         
         for (hexString, bitString) in bitStrings {
             var bytes = hexString.hexStringBytes
-            let parsedString = PostgresBinaryUtils.parseBitString(value: &bytes, length: bytes.count)
+            let parsedString = BinaryUtils.parseBitString(value: &bytes, length: bytes.count)
             XCTAssertEqual(bitString, parsedString)
         }
     }

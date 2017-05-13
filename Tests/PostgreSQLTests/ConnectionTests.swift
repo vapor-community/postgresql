@@ -6,16 +6,19 @@ class ConnectionTests: XCTestCase {
     static let allTests = [
         ("testConnection", testConnection),
         ("testConnInfoParams", testConnInfoParams),
-        ("testConnectionFailure", testConnectionFailure)
+        ("testConnInfoRaw", testConnInfoRaw),
+        ("testConnectionFailure", testConnectionFailure),
+        ("testConnectionSuccess", testConnectionSuccess),
     ]
 
     var postgreSQL: PostgreSQL.Database!
 
     func testConnection() throws {
-        postgreSQL = PostgreSQL.Database.makeTestConnection()
+        postgreSQL = PostgreSQL.Database.makeTest()
+        let conn = try postgreSQL.makeConnection()
 
         let connection = try postgreSQL.makeConnection()
-        XCTAssert(connection.status() == CONNECTION_OK)
+        XCTAssert(conn.status == CONNECTION_OK)
         XCTAssertTrue(connection.isConnected)
 
         try connection.reset()
@@ -31,7 +34,19 @@ class ConnectionTests: XCTestCase {
                          "dbname": "test",
                          "user": "postgres",
                          "password": ""])
-            try postgreSQL.execute("SELECT version()")
+            let conn = try postgreSQL.makeConnection()
+            try conn.execute("SELECT version()")
+        } catch {
+            XCTFail("Could not connect to database")
+        }
+    }
+    
+    func testConnInfoRaw() {
+        do {
+            let postgreSQL = try PostgreSQL.Database(
+                connInfo: "host='127.0.0.1' port='5432' dbname='test' user='postgres' password=''")
+            let conn = try postgreSQL.makeConnection()
+            try conn.execute("SELECT version()")
         } catch {
             XCTFail("Could not connect to database")
         }
@@ -48,8 +63,8 @@ class ConnectionTests: XCTestCase {
 
         try XCTAssertThrowsError(database.makeConnection()) { error in
             switch error {
-            case DatabaseError.cannotEstablishConnection(_):
-                break
+            case let postgreSQLError as PostgreSQLError:
+                XCTAssertEqual(postgreSQLError.code, PostgreSQLError.Code.connectionFailure)
             default:
                 XCTFail("Invalid error")
             }
@@ -58,14 +73,15 @@ class ConnectionTests: XCTestCase {
 
     func testConnectionSuccess() throws {
         do {
-            let database = try PostgreSQL.Database(
+            let postgreSQL = try PostgreSQL.Database(
                 hostname: "127.0.0.1",
                 port: 5432,
                 database: "test",
                 user: "postgres",
                 password: ""
             )
-            try database.execute("SELECT version()")
+            let conn = try postgreSQL.makeConnection()
+            try conn.execute("SELECT version()")
         } catch {
             XCTFail("Could not connect to database")
         }
