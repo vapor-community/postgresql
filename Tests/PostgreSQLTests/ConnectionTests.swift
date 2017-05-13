@@ -6,7 +6,9 @@ class ConnectionTests: XCTestCase {
     static let allTests = [
         ("testConnection", testConnection),
         ("testConnInfoParams", testConnInfoParams),
-        ("testConnectionFailure", testConnectionFailure)
+        ("testConnInfoRaw", testConnInfoRaw),
+        ("testConnectionFailure", testConnectionFailure),
+        ("testConnectionSuccess", testConnectionSuccess),
     ]
 
     var postgreSQL: PostgreSQL.Database!
@@ -32,6 +34,17 @@ class ConnectionTests: XCTestCase {
                          "dbname": "test",
                          "user": "postgres",
                          "password": ""])
+            let conn = try postgreSQL.makeConnection()
+            try conn.execute("SELECT version()")
+        } catch {
+            XCTFail("Could not connect to database")
+        }
+    }
+    
+    func testConnInfoRaw() {
+        do {
+            let postgreSQL = try PostgreSQL.Database(
+                connInfo: "host='127.0.0.1' port='5432' dbname='test' user='postgres' password=''")
             let conn = try postgreSQL.makeConnection()
             try conn.execute("SELECT version()")
         } catch {

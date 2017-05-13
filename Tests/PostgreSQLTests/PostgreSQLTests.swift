@@ -756,4 +756,68 @@ class PostgreSQLTests: XCTestCase {
         let results = try conn.execute("SELECT version()")
         XCTAssertNotNil(results.array?[0].object?["version"]?.string)
     }
+    
+    func testTransactionSuccess() throws {
+        let conn = try postgreSQL.makeConnection()
+        
+        let isolationLevels: [Connection.TransactionIsolationLevel] = [
+            .readCommitted,
+            .repeatableRead,
+            .serializable,
+        ]
+        
+        for isolationLevel in isolationLevels {
+            try conn.execute("DROP TABLE IF EXISTS foo")
+            try conn.execute("CREATE TABLE foo (bar INT, baz VARCHAR(16), bla BOOLEAN)")
+            
+            try conn.transaction(isolationLevel: isolationLevel) {
+                try conn.execute("INSERT INTO foo VALUES (42, 'Life', true)")
+                try conn.execute("INSERT INTO foo VALUES (1337, 'Elite', false)")
+                try conn.execute("INSERT INTO foo VALUES (9, NULL, true)")
+            }
+            
+            let resuls = try conn.execute("SELECT * FROM foo").array ?? []
+            XCTAssertEqual(resuls.count, 3)
+        }
+    }
+    
+    func testTransactionFailure() throws {
+        let conn = try postgreSQL.makeConnection()
+        
+        enum TestError : Error {
+            case failure
+        }
+        
+        let isolationLevels: [Connection.TransactionIsolationLevel] = [
+            .readCommitted,
+            .repeatableRead,
+            .serializable,
+        ]
+        
+        for isolationLevel in isolationLevels {
+            try conn.execute("DROP TABLE IF EXISTS foo")
+            try conn.execute("CREATE TABLE foo (bar INT, baz VARCHAR(16), bla BOOLEAN)")
+            
+            do {
+                try conn.transaction(isolationLevel: isolationLevel) {
+                    try conn.execute("INSERT INTO foo VALUES (42, 'Life', true)")
+                    try conn.execute("INSERT INTO foo VALUES (1337, 'Elite', false)")
+                    try conn.execute("INSERT INTO foo VALUES (9, NULL, true)")
+                    
+                    throw TestError.failure
+                }
+                
+                XCTFail("transaction should throw error")
+            }
+            catch TestError.failure {
+                
+            }
+            catch {
+                XCTFail("Should not fail with unknown error")
+            }
+            
+            let resuls = try conn.execute("SELECT * FROM foo").array ?? []
+            XCTAssertEqual(resuls.count, 0)
+        }
+    }
 }

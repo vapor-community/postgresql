@@ -260,8 +260,7 @@ extension StructuredData {
             return "NULL"
 
         case .date(let date):
-            let formatter = BinaryUtils.Formatters.dateFormatter(for: .timestamptz)
-            return formatter.string(from: date)
+            return BinaryUtils.Formatters.timestamptz.string(from: date)
         }
     }
 }

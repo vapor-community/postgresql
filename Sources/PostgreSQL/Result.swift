@@ -72,9 +72,14 @@ public class Result {
         switch status {
         case .nonFatalError, .fatalError, .badResponse, .emptyQuery, .unknown:
             // Error occurred
-            let raw = String(cString: PQresultErrorField(pointer, 0))
-            let code = PostgreSQLError.Code(rawValue: raw) ?? .unknown
-            throw PostgreSQLError(code: code, connection: connection)
+            if let rawCString = PQresultErrorField(pointer, 0) {
+                let raw = String(cString: rawCString)
+                let code = PostgreSQLError.Code(rawValue: raw) ?? .unknown
+                throw PostgreSQLError(code: code, connection: connection)
+            }
+            else {
+                throw PostgreSQLError(code: .unknown, connection: connection)
+            }
             
         case .copyOut, .copyIn, .copyBoth, .commandOk:
             // No data to parse

@@ -22,14 +22,6 @@ extension Float32 {
     var bigEndian: Float32 {
         return Float32(bitPattern: bitPattern.bigEndian)
     }
-    
-    var littleEndian: Float32 {
-        return Float32(bitPattern: bitPattern.littleEndian)
-    }
-    
-    var byteSwapped: Float32 {
-        return Float32(bitPattern: bitPattern.byteSwapped)
-    }
 }
 
 extension Float64 {
@@ -41,14 +33,6 @@ extension Float64 {
     var bigEndian: Float64 {
         return Float64(bitPattern: bitPattern.bigEndian)
     }
-    
-    var littleEndian: Float64 {
-        return Float64(bitPattern: bitPattern.littleEndian)
-    }
-    
-    var byteSwapped: Float64 {
-        return Float64(bitPattern: bitPattern.byteSwapped)
-    }
 }
 
 /// Most information for parsing binary formats has been retrieved from the following links:
@@ -56,42 +40,14 @@ extension Float64 {
 /// - https://github.com/postgres/postgres/tree/55c3391d1e6a201b5b891781d21fe682a8c64fe6/src/backend/utils/adt (Backend sending code)
 struct BinaryUtils {
     
-    // MARK: - Formatters
+    // MARK: - Formatter
     
     struct Formatters {
-        private static func formatter(format: String, forceUTC: Bool) -> DateFormatter {
+        static let timestamptz: DateFormatter = {
             let formatter = DateFormatter()
-            if forceUTC {
-                formatter.timeZone = TimeZone(abbreviation: "UTC")
-            }
-            formatter.dateFormat = format
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSSX"
             return formatter
-        }
-        
-        private static let timestamp: DateFormatter = formatter(format: "yyyy-MM-dd HH:mm:ss.SSS", forceUTC: true)
-        private static let timestamptz: DateFormatter = formatter(format: "yyyy-MM-dd HH:mm:ss.SSSX", forceUTC: false)
-        
-        private static let date: DateFormatter = formatter(format: "yyyy-MM-dd", forceUTC: false)
-        
-        private static let time: DateFormatter = formatter(format: "HH:mm:ss.SSS", forceUTC: true)
-        private static let timetz: DateFormatter = formatter(format: "HH:mm:ss.SSSX", forceUTC: false)
-        
-        static func dateFormatter(for type: FieldType.Supported) -> DateFormatter {
-            switch type {
-            case .date:
-                return date
-            case .time:
-                return time
-            case .timetz:
-                return timetz
-            case .timestamp:
-                return timestamp
-            case .timestamptz:
-                return timestamptz
-            default:
-                return timestamptz
-            }
-        }
+        }()
         
         static let interval: NumberFormatter = {
             let formatter = NumberFormatter()
