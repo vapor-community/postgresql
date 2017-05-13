@@ -10,302 +10,335 @@ public struct PostgreSQLError: Error {
     public let reason: String
 }
 
+public enum PostgresSQLStatusError: Error {
+    case emptyQuery
+    case badResponse
+}
+
 extension PostgreSQLError {
     public enum Code: String {
         // Class 01 — Warning
         case warning = "01000"
-        case dynamic_result_sets_returned = "0100C"
-        case implicit_zero_bit_padding = "01008"
-        case null_value_eliminated_in_set_function = "01003"
-        case privilege_not_granted = "01007"
-        case privilege_not_revoked = "01006"
-        case string_data_right_truncation = "01004"
-        case deprecated_feature = "01P01"
+        case dynamicResultSetsReturned = "0100C"
+        case implicitZeroBitPadding = "01008"
+        case nullValueEliminatedInSetFunction = "01003"
+        case privilegeNotGranted = "01007"
+        case privilegeNotRevoked = "01006"
+        case stringDataRightTruncationWarning = "01004"
+        case deprecatedFeature = "01P01"
         // Class 02 — No Data (this is also a warning class per the SQL standard)
-        case no_data = "02000"
-        case no_additional_dynamic_result_sets_returned = "02001"
+        case noData = "02000"
+        case noAdditionalDynamicResultSetsReturned = "02001"
         // Class 03 — SQL Statement Not Yet Complete
-        case sql_statement_not_yet_complete = "03000"
+        case sqlStatementNotYetComplete = "03000"
         // Class 08 — Connection Exception
-        case connection_exception = "08000"
-        case connection_does_not_exist = "08003"
-        case connection_failure = "08006"
-        case sqlclient_unable_to_establish_sqlconnection = "08001"
-        case sqlserver_rejected_establishment_of_sqlconnection = "08004"
-        case transaction_resolution_unknown = "08007"
-        case protocol_violation = "08P01"
+        case connectionException = "08000"
+        case connectionDoesNotExist = "08003"
+        case connectionFailure = "08006"
+        case sqlclientUnableToEstablishSqlconnection = "08001"
+        case sqlserverRejectedEstablishmentOfSqlconnection = "08004"
+        case transactionResolutionUnknown = "08007"
+        case protocolViolation = "08P01"
         // Class 09 — Triggered Action Exception
-        case triggered_action_exception = "09000"
+        case triggeredActionException = "09000"
         // Class  0A — Feature Not Supported
-        case feature_not_supported = "0A000"
+        case featureNotSupported = "0A000"
         // Class  0B — Invalid Transaction Initiation
-        case invalid_transaction_initiation = "0B000"
+        case invalidTransactionInitiation = "0B000"
         // Class 0F — Locator Exception
-        case locator_exception = "0F000"
-        case invalid_locator_specification = "0F001"
+        case locatorException = "0F000"
+        case invalidLocatorSpecification = "0F001"
         // Class 0L — Invalid Grantor
-        case invalid_grantor = "0L000"
-        case invalid_grant_operation = "0LP01"
+        case invalidGrantor = "0L000"
+        case invalidGrantOperation = "0LP01"
         // Class 0P — Invalid Role Specification
-        case invalid_role_specification = "0P000"
+        case invalidRoleSpecification = "0P000"
         // Class 0Z — Diagnostics Exception
-        case diagnostics_exception = "0Z000"
-        case stacked_diagnostics_accessed_without_active_handler = "0Z002"
+        case diagnosticsException = "0Z000"
+        case stackedDiagnosticsAccessedWithoutActiveHandler = "0Z002"
         // Class 20 — Case Not Found
-        case case_not_found = "20000"
+        case caseNotFound = "20000"
         // Class 21 — Cardinality Violation
-        case cardinality_violation = "21000"
+        case cardinalityViolation = "21000"
         // Class 22 — Data Exception
-        case data_exception = "22000"
-        case array_subscript_error = "2202E"
-        case character_not_in_repertoire = "22021"
-        case datetime_field_overflow = "22008"
-        case division_by_zero = "22012"
-        case error_in_assignment = "22005"
-        case escape_character_conflict = "2200B"
-        case indicator_overflow = "22022"
-        case interval_field_overflow = "22015"
-        case invalid_argument_for_logarithm = "2201E"
-        case invalid_argument_for_ntile_function = "22014"
-        case invalid_argument_for_nth_value_function = "22016"
-        case invalid_argument_for_power_function = "2201F"
-        case invalid_argument_for_width_bucket_function = "2201G"
-        case invalid_character_value_for_cast = "22018"
-        case invalid_datetime_format = "22007"
-        case invalid_escape_character = "22019"
-        case invalid_escape_octet = "2200D"
-        case invalid_escape_sequence = "22025"
-        case nonstandard_use_of_escape_character = "22P06"
-        case invalid_indicator_parameter_value = "22010"
-        case invalid_parameter_value = "22023"
-        case invalid_regular_expression = "2201B"
-        case invalid_row_count_in_limit_clause = "2201W"
-        case invalid_row_count_in_result_offset_clause = "2201X"
-        case invalid_tablesample_argument = "2202H"
-        case invalid_tablesample_repeat = "2202G"
-        case invalid_time_zone_displacement_value = "22009"
-        case invalid_use_of_escape_character = "2200C"
-        case most_specific_type_mismatch = "2200G"
-        case null_value_not_allowed = "22004"
-        case null_value_no_indicator_parameter = "22002"
-        case numeric_value_out_of_range = "22003"
-        case string_data_length_mismatch = "22026"
-        // case string_data_right_truncation = "22001"
-        case substring_error = "22011"
-        case trim_error = "22027"
-        case unterminated_c_string = "22024"
-        case zero_length_character_string = "2200F"
-        case floating_point_exception = "22P01"
-        case invalid_text_representation = "22P02"
-        case invalid_binary_representation = "22P03"
-        case bad_copy_file_format = "22P04"
-        case untranslatable_character = "22P05"
-        case not_an_xml_document = "2200L"
-        case invalid_xml_document = "2200M"
-        case invalid_xml_content = "2200N"
-        case invalid_xml_comment = "2200S"
-        case invalid_xml_processing_instruction = "2200T"
+        case dataException = "22000"
+        case arraySubscriptError = "2202E"
+        case characterNotInRepertoire = "22021"
+        case datetimeFieldOverflow = "22008"
+        case divisionByZero = "22012"
+        case errorInAssignment = "22005"
+        case escapeCharacterConflict = "2200B"
+        case indicatorOverflow = "22022"
+        case intervalFieldOverflow = "22015"
+        case invalidArgumentForLogarithm = "2201E"
+        case invalidArgumentForNtileFunction = "22014"
+        case invalidArgumentForNthValueFunction = "22016"
+        case invalidArgumentForPowerFunction = "2201F"
+        case invalidArgumentForWidthBucketFunction = "2201G"
+        case invalidCharacterValueForCast = "22018"
+        case invalidDatetimeFormat = "22007"
+        case invalidEscapeCharacter = "22019"
+        case invalidEscapeOctet = "2200D"
+        case invalidEscapeSequence = "22025"
+        case nonstandardUseOfEscapeCharacter = "22P06"
+        case invalidIndicatorParameterValue = "22010"
+        case invalidParameterValue = "22023"
+        case invalidRegularExpression = "2201B"
+        case invalidRowCountInLimitClause = "2201W"
+        case invalidRowCountInResultOffsetClause = "2201X"
+        case invalidTablesampleArgument = "2202H"
+        case invalidTablesampleRepeat = "2202G"
+        case invalidTimeZoneDisplacementValue = "22009"
+        case invalidUseOfEscapeCharacter = "2200C"
+        case mostSpecificTypeMismatch = "2200G"
+        case nullValueNotAllowed = "22004"
+        case nullValueNoIndicatorParameter = "22002"
+        case numericValueOutOfRange = "22003"
+        case stringDataLengthMismatch = "22026"
+        case stringDataRightTruncationException = "22001"
+        case substringError = "22011"
+        case trimError = "22027"
+        case unterminatedCString = "22024"
+        case zeroLengthCharacterString = "2200F"
+        case floatingPointException = "22P01"
+        case invalidTextRepresentation = "22P02"
+        case invalidBinaryRepresentation = "22P03"
+        case badCopyFileFormat = "22P04"
+        case untranslatableCharacter = "22P05"
+        case notAnXmlDocument = "2200L"
+        case invalidXmlDocument = "2200M"
+        case invalidXmlContent = "2200N"
+        case invalidXmlComment = "2200S"
+        case invalidXmlProcessingInstruction = "2200T"
         // Class 23 — Integrity Constraint Violation
-        case integrity_constraint_violation = "23000"
-        case restrict_violation = "23001"
-        case not_null_violation = "23502"
-        case foreign_key_violation = "23503"
-        case unique_violation = "23505"
-        case check_violation = "23514"
-        case exclusion_violation = "23P01"
+        case integrityConstraintViolation = "23000"
+        case restrictViolation = "23001"
+        case notNullViolation = "23502"
+        case foreignKeyViolation = "23503"
+        case uniqueViolation = "23505"
+        case checkViolation = "23514"
+        case exclusionViolation = "23P01"
         // Class 24 — Invalid Cursor State
-        case invalid_cursor_state = "24000"
+        case invalidCursorState = "24000"
         // Class 25 — Invalid Transaction State
-        case invalid_transaction_state = "25000"
-        case active_sql_transaction = "25001"
-        case branch_transaction_already_active = "25002"
-        case held_cursor_requires_same_isolation_level = "25008"
-        case inappropriate_access_mode_for_branch_transaction = "25003"
-        case inappropriate_isolation_level_for_branch_transaction = "25004"
-        case no_active_sql_transaction_for_branch_transaction = "25005"
-        case read_only_sql_transaction = "25006"
-        case schema_and_data_statement_mixing_not_supported = "25007"
-        case no_active_sql_transaction = "25P01"
-        case in_failed_sql_transaction = "25P02"
-        case idle_in_transaction_session_timeout = "25P03"
+        case invalidTransactionState = "25000"
+        case activeSqlTransaction = "25001"
+        case branchTransactionAlreadyActive = "25002"
+        case heldCursorRequiresSameIsolationLevel = "25008"
+        case inappropriateAccessModeForBranchTransaction = "25003"
+        case inappropriateIsolationLevelForBranchTransaction = "25004"
+        case noActiveSqlTransactionForBranchTransaction = "25005"
+        case readOnlySqlTransaction = "25006"
+        case schemaAndDataStatementMixingNotSupported = "25007"
+        case noActiveSqlTransaction = "25P01"
+        case inFailedSqlTransaction = "25P02"
+        case idleInTransactionSessionTimeout = "25P03"
         // Class 26 — Invalid SQL Statement Name
-        case invalid_sql_statement_name = "26000"
+        case invalidSqlStatementName = "26000"
         // Class 27 — Triggered Data Change Violation
-        case triggered_data_change_violation = "27000"
+        case triggeredDataChangeViolation = "27000"
         // Class 28 — Invalid Authorization Specification
-        case invalid_authorization_specification = "28000"
-        case invalid_password = "28P01"
+        case invalidAuthorizationSpecification = "28000"
+        case invalidPassword = "28P01"
         // Class 2B — Dependent Privilege Descriptors Still Exist
-        case dependent_privilege_descriptors_still_exist = "2B000"
-        case dependent_objects_still_exist = "2BP01"
+        case dependentPrivilegeDescriptorsStillExist = "2B000"
+        case dependentObjectsStillExist = "2BP01"
         // Class 2D — Invalid Transaction Termination
-        case invalid_transaction_termination = "2D000"
+        case invalidTransactionTermination = "2D000"
         // Class 2F — SQL Routine Exception
-        case sql_routine_exception = "2F000"
-        case function_executed_no_return_statement = "2F005"
-        case modifying_sql_data_not_permitted = "2F002"
-        case prohibited_sql_statement_attempted = "2F003"
-        case reading_sql_data_not_permitted = "2F004"
+        case sqlRoutineException = "2F000"
+        case functionExecutedNoReturnStatement = "2F005"
+        case modifyingSqlDataNotPermittedSQL = "2F002"
+        case prohibitedSqlStatementAttemptedSQL = "2F003"
+        case readingSqlDataNotPermittedSQL = "2F004"
         // Class 34 — Invalid Cursor Name
-        case invalid_cursor_name = "34000"
+        case invalidCursorName = "34000"
         // Class 38 — External Routine Exception
-        case external_routine_exception = "38000"
-        case containing_sql_not_permitted = "38001"
-        // case modifying_sql_data_not_permitted = "38002"
-        // case prohibited_sql_statement_attempted = "38003"
-        // case reading_sql_data_not_permitted = "38004"
+        case externalRoutineException = "38000"
+        case containingSqlNotPermitted = "38001"
+        case modifyingSqlDataNotPermittedExternal = "38002"
+        case prohibitedSqlStatementAttemptedExternal = "38003"
+        case readingSqlDataNotPermittedExternal = "38004"
         // Class 39 — External Routine Invocation Exception
-        case external_routine_invocation_exception = "39000"
-        case invalid_sqlstate_returned = "39001"
+        case externalRoutineInvocationException = "39000"
+        case invalidSqlstateReturned = "39001"
         // case null_value_not_allowed = "39004"
-        case trigger_protocol_violated = "39P01"
-        case srf_protocol_violated = "39P02"
+        case triggerProtocolViolated = "39P01"
+        case srfProtocolViolated = "39P02"
         case event_trigger_protocol_violated = "39P03"
         // Class 3B — Savepoint Exception
-        case savepoint_exception = "3B000"
-        case invalid_savepoint_specification = "3B001"
+        case savepointException = "3B000"
+        case invalidSavepointSpecification = "3B001"
         // Class 3D — Invalid Catalog Name
-        case invalid_catalog_name = "3D000"
+        case invalidCatalogName = "3D000"
         // Class 3F — Invalid Schema Name
-        case invalid_schema_name = "3F000"
+        case invalidSchemaName = "3F000"
         // Class 40 — Transaction Rollback
-        case transaction_rollback = "40000"
-        case transaction_integrity_constraint_violation = "40002"
-        case serialization_failure = "40001"
-        case statement_completion_unknown = "40003"
-        case deadlock_detected = "40P01"
+        case transactionRollback = "40000"
+        case transactionIntegrityConstraintViolation = "40002"
+        case serializationFailure = "40001"
+        case statementCompletionUnknown = "40003"
+        case deadlockDetected = "40P01"
         // Class 42 — Syntax Error or Access Rule Violation
-        case syntax_error_or_access_rule_violation = "42000"
-        case syntax_error = "42601"
-        case insufficient_privilege = "42501"
-        case cannot_coerce = "42846"
-        case grouping_error = "42803"
-        case windowing_error = "42P20"
-        case invalid_recursion = "42P19"
-        case invalid_foreign_key = "42830"
-        case invalid_name = "42602"
-        case name_too_long = "42622"
-        case reserved_name = "42939"
-        case datatype_mismatch = "42804"
-        case indeterminate_datatype = "42P18"
-        case collation_mismatch = "42P21"
-        case indeterminate_collation = "42P22"
-        case wrong_object_type = "42809"
-        case undefined_column = "42703"
-        case undefined_function = "42883"
-        case undefined_table = "42P01"
-        case undefined_parameter = "42P02"
-        case undefined_object = "42704"
-        case duplicate_column = "42701"
-        case duplicate_cursor = "42P03"
-        case duplicate_database = "42P04"
-        case duplicate_function = "42723"
-        case duplicate_prepared_statement = "42P05"
-        case duplicate_schema = "42P06"
-        case duplicate_table = "42P07"
-        case duplicate_alias = "42712"
-        case duplicate_object = "42710"
-        case ambiguous_column = "42702"
-        case ambiguous_function = "42725"
-        case ambiguous_parameter = "42P08"
-        case ambiguous_alias = "42P09"
-        case invalid_column_reference = "42P10"
-        case invalid_column_definition = "42611"
-        case invalid_cursor_definition = "42P11"
-        case invalid_database_definition = "42P12"
-        case invalid_function_definition = "42P13"
-        case invalid_prepared_statement_definition = "42P14"
-        case invalid_schema_definition = "42P15"
-        case invalid_table_definition = "42P16"
-        case invalid_object_definition = "42P17"
+        case syntaxErrorOrAccessRuleViolation = "42000"
+        case syntaxError = "42601"
+        case insufficientPrivilege = "42501"
+        case cannotCoerce = "42846"
+        case groupingError = "42803"
+        case windowingError = "42P20"
+        case invalidRecursion = "42P19"
+        case invalidForeignKey = "42830"
+        case invalidName = "42602"
+        case nameTooLong = "42622"
+        case reservedName = "42939"
+        case datatypeMismatch = "42804"
+        case indeterminateDatatype = "42P18"
+        case collationMismatch = "42P21"
+        case indeterminateCollation = "42P22"
+        case wrongObjectType = "42809"
+        case undefinedColumn = "42703"
+        case undefinedFunction = "42883"
+        case undefinedTable = "42P01"
+        case undefinedParameter = "42P02"
+        case undefinedObject = "42704"
+        case duplicateColumn = "42701"
+        case duplicateCursor = "42P03"
+        case duplicateDatabase = "42P04"
+        case duplicateFunction = "42723"
+        case duplicatePreparedStatement = "42P05"
+        case duplicateSchema = "42P06"
+        case duplicateTable = "42P07"
+        case duplicateAlias = "42712"
+        case duplicateObject = "42710"
+        case ambiguousColumn = "42702"
+        case ambiguousFunction = "42725"
+        case ambiguousParameter = "42P08"
+        case ambiguousAlias = "42P09"
+        case invalidColumnReference = "42P10"
+        case invalidColumnDefinition = "42611"
+        case invalidCursorDefinition = "42P11"
+        case invalidDatabaseDefinition = "42P12"
+        case invalidFunctionDefinition = "42P13"
+        case invalidPreparedStatementDefinition = "42P14"
+        case invalidSchemaDefinition = "42P15"
+        case invalidTableDefinition = "42P16"
+        case invalidObjectDefinition = "42P17"
         // Class 44 — WITH CHECK OPTION Violation
-        case with_check_option_violation = "44000"
+        case withCheckOptionViolation = "44000"
         // Class 53 — Insufficient Resources
-        case insufficient_resources = "53000"
-        case disk_full = "53100"
-        case out_of_memory = "53200"
-        case too_many_connections = "53300"
-        case configuration_limit_exceeded = "53400"
+        case insufficientResources = "53000"
+        case diskFull = "53100"
+        case outOfMemory = "53200"
+        case tooManyConnections = "53300"
+        case configurationLimitExceeded = "53400"
         // Class 54 — Program Limit Exceeded
-        case program_limit_exceeded = "54000"
-        case statement_too_complex = "54001"
-        case too_many_columns = "54011"
-        case too_many_arguments = "54023"
+        case programLimitExceeded = "54000"
+        case statementTooComplex = "54001"
+        case tooManyColumns = "54011"
+        case tooManyArguments = "54023"
         // Class 55 — Object Not In Prerequisite State
-        case object_not_in_prerequisite_state = "55000"
-        case object_in_use = "55006"
-        case cant_change_runtime_param = "55P02"
-        case lock_not_available = "55P03"
+        case objectNotInPrerequisiteState = "55000"
+        case objectInUse = "55006"
+        case cantChangeRuntimeParam = "55P02"
+        case lockNotAvailable = "55P03"
         // Class 57 — Operator Intervention
-        case operator_intervention = "57000"
-        case query_canceled = "57014"
-        case admin_shutdown = "57P01"
-        case crash_shutdown = "57P02"
-        case cannot_connect_now = "57P03"
-        case database_dropped = "57P04"
+        case operatorIntervention = "57000"
+        case queryCanceled = "57014"
+        case adminShutdown = "57P01"
+        case crashShutdown = "57P02"
+        case cannotConnectNow = "57P03"
+        case databaseDropped = "57P04"
         // Class 58 — System Error (errors external to PostgreSQL itself)
-        case system_error = "58000"
-        case io_error = "58030"
-        case undefined_file = "58P01"
-        case duplicate_file = "58P02"
+        case systemError = "58000"
+        case ioError = "58030"
+        case undefinedFile = "58P01"
+        case duplicateFile = "58P02"
         // Class 72 — Snapshot Failure
-        case snapshot_too_old = "72000"
+        case snapshotTooOld = "72000"
         // Class F0 — Configuration File Error
-        case config_file_error = "F0000"
-        case lock_file_exists = "F0001"
+        case configFileError = "F0000"
+        case lockFileExists = "F0001"
         // Class HV — Foreign Data Wrapper Error (SQL/MED)
-        case fdw_error = "HV000"
-        case fdw_column_name_not_found = "HV005"
-        case fdw_dynamic_parameter_value_needed = "HV002"
-        case fdw_function_sequence_error = "HV010"
-        case fdw_inconsistent_descriptor_information = "HV021"
-        case fdw_invalid_attribute_value = "HV024"
-        case fdw_invalid_column_name = "HV007"
-        case fdw_invalid_column_number = "HV008"
-        case fdw_invalid_data_type = "HV004"
-        case fdw_invalid_data_type_descriptors = "HV006"
-        case fdw_invalid_descriptor_field_identifier = "HV091"
-        case fdw_invalid_handle = "HV00B"
-        case fdw_invalid_option_index = "HV00C"
-        case fdw_invalid_option_name = "HV00D"
-        case fdw_invalid_string_length_or_buffer_length = "HV090"
-        case fdw_invalid_string_format = "HV00A"
-        case fdw_invalid_use_of_null_pointer = "HV009"
-        case fdw_too_many_handles = "HV014"
-        case fdw_out_of_memory = "HV001"
-        case fdw_no_schemas = "HV00P"
-        case fdw_option_name_not_found = "HV00J"
-        case fdw_reply_handle = "HV00K"
-        case fdw_schema_not_found = "HV00Q"
-        case fdw_table_not_found = "HV00R"
-        case fdw_unable_to_create_execution = "HV00L"
-        case fdw_unable_to_create_reply = "HV00M"
-        case fdw_unable_to_establish_connection = "HV00N"
-        case plpgsql_error = "P0000"
-        case raise_exception = "P0001"
-        case no_data_found = "P0002"
-        case too_many_rows = "P0003"
-        case assert_failure = "P0004"
+        case fdwError = "HV000"
+        case fdwColumnNameNotFound = "HV005"
+        case fdwDynamicParameterValueNeeded = "HV002"
+        case fdwFunctionSequenceError = "HV010"
+        case fdwInconsistentDescriptorInformation = "HV021"
+        case fdwInvalidAttributeValue = "HV024"
+        case fdwInvalidColumnName = "HV007"
+        case fdwInvalidColumnNumber = "HV008"
+        case fdwInvalidDataType = "HV004"
+        case fdwInvalidDataTypeDescriptors = "HV006"
+        case fdwInvalidDescriptorFieldIdentifier = "HV091"
+        case fdwInvalidHandle = "HV00B"
+        case fdwInvalidOptionIndex = "HV00C"
+        case fdwInvalidOptionName = "HV00D"
+        case fdwInvalidStringLengthOrBufferLength = "HV090"
+        case fdwInvalidStringFormat = "HV00A"
+        case fdwInvalidUseOfNullPointer = "HV009"
+        case fdwTooManyHandles = "HV014"
+        case fdwOutOfMemory = "HV001"
+        case fdwNoSchemas = "HV00P"
+        case fdwOptionNameNotFound = "HV00J"
+        case fdwReplyHandle = "HV00K"
+        case fdwSchemaNotFound = "HV00Q"
+        case fdwTableNotFound = "HV00R"
+        case fdwUnableToCreateExecution = "HV00L"
+        case fdwUnableToCreateReply = "HV00M"
+        case fdwUnableToEstablishConnection = "HV00N"
+        case plpgsqlError = "P0000"
+        case raiseException = "P0001"
+        case noDataFound = "P0002"
+        case tooManyRows = "P0003"
+        case assertFailure = "P0004"
         // Class XX — Internal Error
-        case internal_error = "XX000"
-        case data_corrupted = "XX001"
-        case index_corrupted = "XX002"
-        case unknown = "Unknown"
+        case internalError = "XX000"
+        case dataCorrupted = "XX001"
+        case indexCorrupted = "XX002"
+        
+        case unknown
      }
 }
 
 // MARK: Inits
 
 extension PostgreSQLError {
-    init(code: Code, connection: Connection) {
-        let message: String
+    public init(code: Code, connection: Connection) {
+        let reason: String
         if let error = PQerrorMessage(connection.cConnection) {
-            message = String(cString: error)
-        } else {
-            message = "Unknown"
+            reason = String(cString: error)
+        }
+        else {
+            reason = "Unknown"
         }
         
-        self.init(code: code, reason: message)
+        self.init(code: code, reason: reason)
+    }
+    
+    public init(result: Result) {
+        guard let pointer = result.pointer else {
+            self.init(code: .unknown, reason: "Unknown")
+            return
+        }
+        
+        let code: Code
+        if let rawCodePointer = PQresultErrorField(pointer, 67) { // 67 == 'C' == PG_DIAG_SQLSTATE
+            let rawCode = String(cString: rawCodePointer)
+            code = Code(rawValue: rawCode) ?? .unknown
+        }
+        else {
+            code = .unknown
+        }
+        
+        let reason: String
+        if let messagePointer = PQresultErrorMessage(pointer) {
+            reason = String(cString: messagePointer)
+        }
+        else {
+            reason = "Unknown"
+        }
+        
+        self.init(code: code, reason: reason)
     }
 }
 
@@ -323,7 +356,7 @@ extension PostgreSQLError: Debuggable {
 
     public var possibleCauses: [String] {
         switch code {
-        case .connection_exception, .connection_does_not_exist, .connection_failure:
+        case .connectionException, .connectionDoesNotExist, .connectionFailure:
             return [
                 "The connection to the server degraded during the query",
                 "The connection has been open for too long",
@@ -336,12 +369,12 @@ extension PostgreSQLError: Debuggable {
 
     public var suggestedFixes: [String] {
         switch code {
-        case .syntax_error:
+        case .syntaxError:
             return [
                 "Fix the invalid syntax in your query",
                 "If an ORM has generated this error, report the issue to its GitHub page"
             ]
-        case .connection_exception, .connection_failure:
+        case .connectionException, .connectionFailure:
             return [
                 "Make sure you have entered the correct username and password",
                 "Make sure the database has been created"

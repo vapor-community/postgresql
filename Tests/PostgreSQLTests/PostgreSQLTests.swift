@@ -759,6 +759,36 @@ class PostgreSQLTests: XCTestCase {
         XCTAssertNotNil(results.array?[0].object?["version"]?.string)
     }
     
+    func testEmptyQuery() throws {
+        let conn = try postgreSQL.makeConnection()
+  
+        do {
+            try conn.execute("")
+            XCTFail("This query should not succeed")
+        }
+        catch PostgresSQLStatusError.emptyQuery {
+            // Should end up here
+        }
+        catch {
+            throw error
+        }
+    }
+    
+    func testInvalidQuery() throws {
+        let conn = try postgreSQL.makeConnection()
+        
+        do {
+            try conn.execute("SELECT * FROM nothing")
+            XCTFail("This query should not succeed")
+        }
+        catch let error as PostgreSQLError {
+            XCTAssertEqual(error.code, PostgreSQLError.Code.undefinedTable)
+        }
+        catch {
+            throw error
+        }
+    }
+    
     func testTransactionSuccess() throws {
         let conn = try postgreSQL.makeConnection()
         

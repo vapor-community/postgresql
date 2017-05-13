@@ -67,7 +67,7 @@ public final class Connection: ConnInfoInitializable {
             lengths.append(Int32(bind.length))
         }
         
-        let resultPointer: Result.Pointer = PQexecParams(
+        let resultPointer: Result.Pointer? = PQexecParams(
             cConnection,
             query,
             Int32(binds.count),
@@ -94,7 +94,7 @@ public final class Connection: ConnInfoInitializable {
     
     private func validateConnection() throws {
         guard isConnected else {
-            throw PostgreSQLError(code: .connection_failure, connection: self)
+            throw PostgreSQLError(code: .connectionFailure, connection: self)
         }
     }
 

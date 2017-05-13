@@ -18,9 +18,13 @@ public class Result {
         case nonFatalError
         case fatalError
         case emptyQuery
-        case unknown
         
-        init(_ pointer: Pointer) {
+        init(_ pointer: Pointer?) {
+            guard let pointer = pointer else {
+                self = .fatalError
+                return
+            }
+            
             switch PQresultStatus(pointer) {
             case PGRES_COMMAND_OK:
                 self = .commandOk
@@ -41,20 +45,20 @@ public class Result {
             case PGRES_EMPTY_QUERY:
                 self = .emptyQuery
             default:
-                self = .unknown
+                self = .fatalError
             }
         }
     }
     
     // MARK: - Properties
     
-    public let pointer: Pointer
+    public let pointer: Pointer?
     public let connection: Connection
     public let status: Status
     
     // MARK: - Init
     
-    public init(pointer: Pointer, connection: Connection) {
+    public init(pointer: Pointer?, connection: Connection) {
         self.pointer = pointer
         self.connection = connection
         status = Status(pointer)
@@ -63,23 +67,23 @@ public class Result {
     // MARK: - Deinit
     
     deinit {
-        PQclear(pointer)
+        if let pointer = pointer {
+            PQclear(pointer)
+        }
     }
     
     // MARK: - Value
     
     public func parseData() throws -> Node {
         switch status {
-        case .nonFatalError, .fatalError, .badResponse, .emptyQuery, .unknown:
-            // Error occurred
-            if let rawCString = PQresultErrorField(pointer, 0) {
-                let raw = String(cString: rawCString)
-                let code = PostgreSQLError.Code(rawValue: raw) ?? .unknown
-                throw PostgreSQLError(code: code, connection: connection)
-            }
-            else {
-                throw PostgreSQLError(code: .unknown, connection: connection)
-            }
+        case .nonFatalError, .fatalError:
+            throw PostgreSQLError(result: self)
+            
+        case .badResponse:
+            throw PostgresSQLStatusError.badResponse
+            
+        case .emptyQuery:
+            throw PostgresSQLStatusError.emptyQuery
             
         case .copyOut, .copyIn, .copyBoth, .commandOk:
             // No data to parse

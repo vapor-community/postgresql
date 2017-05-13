@@ -64,7 +64,7 @@ class ConnectionTests: XCTestCase {
         try XCTAssertThrowsError(database.makeConnection()) { error in
             switch error {
             case let postgreSQLError as PostgreSQLError:
-                XCTAssertEqual(postgreSQLError.code, PostgreSQLError.Code.connection_failure)
+                XCTAssertEqual(postgreSQLError.code, PostgreSQLError.Code.connectionFailure)
             default:
                 XCTFail("Invalid error")
             }
