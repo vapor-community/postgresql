@@ -1,39 +1,96 @@
 # PostgreSQL for Swift
 
-[![Swift](http://img.shields.io/badge/swift-3.0-brightgreen.svg)](https://swift.org)
+[![Swift](http://img.shields.io/badge/swift-3.1-brightgreen.svg)](https://swift.org)
 [![Build Status](https://travis-ci.org/vapor/postgresql.svg?branch=master)](https://travis-ci.org/vapor/postgresql)
 
-A Swift wrapper for PostgreSQL.
 
-- [x] Thread-Safe
-- [x] Prepared Statements
-- [x] Tested
+# Using PostgreSQL
 
-This wrapper uses the latest PostgreSQL fetch API to enable performant prepared statements and output bindings. Data is sent to and received from the PostgreSQL server in its native data type without converting to and from strings.
+This section outlines how to import the PostgreSQL package both with or without a Vapor project.
 
-The Swift wrappers around the PostgreSQL's C structs and pointers automatically manage closing connections and deallocating memory. Additionally, the PostgreSQL library API is used to perform thread safe, performant queries to the database.
+## With Vapor
 
-## 📖 Examples
+The easiest way to use PostgreSQL with Vapor is to include the PostgreSQL provider.
 
-### Connecting to the Database
+```swift
+import PackageDescription
+
+let package = Package(
+    name: "Project",
+    dependencies: [
+        .Package(url: "https://github.com/vapor/vapor.git", majorVersion: 2),
+        .Package(url: "https://github.com/vapor-community/postgresql-provider.git", majorVersion: 2)
+    ],
+    exclude: [ ... ]
+)
+```
+
+The PostgreSQL provider package adds PostgreSQL to your project and adds some additional, Vapor-specific conveniences like `drop.postgresql()`.
+
+Using `import PostgreSQLProvider` will import both Fluent and Fluent's Vapor-specific APIs.
+
+## With Fluent
+
+Fluent is a powerful, pure-Swift ORM that can be used with any Server-Side Swift framework. The PostgreSQL driver allows you to use a PostgreSQL database to power your models and queries.
+
+```swift
+import PackageDescription
+
+let package = Package(
+    name: "Project",
+    dependencies: [
+        ...
+        .Package(url: "https://github.com/vapor/fluent.git", majorVersion: 2),
+        .Package(url: "https://github.com/vapor-community/postgresql-driver.git", majorVersion: 2)
+    ],
+    exclude: [ ... ]
+)
+```
+
+Use `import PostgreSQLDriver` to access the `PostgreSQLDriver` class which you can use to initialize a Fluent `Database`.
+
+## Just PostgreSQL
+
+At the core of the PostgreSQL provider and PostgreSQL driver is a Swift wrapper around the C PostgreSQL client. This package can be used by itself to send raw, parameterized queries to your PostgreSQL database.
+
+```swift
+import PackageDescription
+
+let package = Package(
+    name: "Project",
+    dependencies: [
+        ...
+        .Package(url: "https://github.com/vapor/postgresql.git", majorVersion: 2)
+    ],
+    exclude: [ ... ]
+)
+```
+
+Use `import PostgreSQL` to access the `PostgreSQL.Database` class.
+
+
+# Examples
+
+## Connecting to the Database
 
 ```swift
 import PostgreSQL
 
 let postgreSQL =  PostgreSQL.Database(
-    dbname: "test",
+    hostname: "localhost",
+    database: "test",
     user: "root",
     password: ""
 )
 ```
 
-### Select
+## Select
 
 ```swift
 let version = try postgreSQL.execute("SELECT version()")
 ```
 
-### Prepared Statement
+## Prepared Statement
 
 The second parameter to `execute()` is an array of `PostgreSQL.Value`s.
 
@@ -41,17 +98,7 @@ The second parameter to `execute()` is an array of `PostgreSQL.Value`s.
 let results = try postgreSQL.execute("SELECT * FROM users WHERE age >= $1", [.int(21)])
 ```
 
-```swift
-public enum Value {
-    case string(String)
-    case int(Int)
-    case bool(Int)
-    case double(Double)
-    case null
-}
-```
-
-### Listen and Notify
+## Listen and Notify
 
 ```swift
 try postgreSQL.listen(to: "test_channel") { notification in
@@ -66,7 +113,7 @@ try postgreSQL.notify(channel: "test_channel", payload: "test_payload")
 
 ```
 
-### Connection
+## Connection
 
 Each call to `execute()` creates a new connection to the PostgreSQL database. This ensures thread safety since a single connection cannot be used on more than one thread.
 
@@ -74,39 +121,9 @@ If you would like to re-use a connection between calls to execute, create a reus
 
 ```swift
 let connection = try postgreSQL.makeConnection()
-let result = try postgreSQL.execute("SELECT LAST_INSERTED_ID() as id", [], connection)
+let result = try postgreSQL.execute("SELECT * FROM users WHERE age >= $1", [.int(21)]), connection)
 ```
 
-No need to worry about closing the connection.
-
-## 🚀 Building
-
-### macOS
-
-Install PostgreSQL
-
-```shell
-brew install postgresql
-brew link postgresql
-brew services start postgresql
-```
-
-### Linux
-
-Install PostgreSQL
-
-```shell
-sudo apt-get update
-sudo apt-get install postgresql postgresql-contrib libpq-dev
-psql -h dbhost -U username dbname
-```
-
-Use `vapor build` or `swift build`.
-
-## Fluent
-
-This wrapper was created to power [Fluent](https://github.com/qutheory/fluent), an [ORM](https://en.wikipedia.org/wiki/Object-relational_mapping) for Swift.
-
-## 👥 Contributors
+## Contributors
 
 Maintained by [Steven Roebert](https://github.com/sroebert), [Nate Bird](https://twitter.com/natesbird), [Prince Ugwuh](https://twitter.com/Prince2k3), and other members of the Vapor community.
