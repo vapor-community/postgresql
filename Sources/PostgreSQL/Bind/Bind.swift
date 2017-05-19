@@ -145,7 +145,7 @@ public final class Bind {
      Creates an input binding from a Date.
      */
     public convenience init(date: Date, configuration: Configuration) {
-        let interval = date.timeIntervalSince(BinaryUtils.TimestampConstants.referenceDate)
+        let interval = date.timeIntervalSinceReferenceDate
         
         if configuration.hasIntegerDatetimes {
             let microseconds = Int64(interval * 1_000_000)
