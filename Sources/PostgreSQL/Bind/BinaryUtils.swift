@@ -216,15 +216,6 @@ struct BinaryUtils {
     
     // MARK: - Date / Time
     
-    struct TimestampConstants {
-        static let referenceDate: Date = {
-            let components = DateComponents(year: 2000, month: 1, day: 1)
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.timeZone = TimeZone(abbreviation: "UTC")!
-            return calendar.date(from: components)!
-        }()
-    }
-    
     static func parseTimetamp(value: UnsafeMutablePointer<Int8>, isInteger: Bool) -> Date {
         let interval: TimeInterval
         if isInteger {
@@ -234,7 +225,7 @@ struct BinaryUtils {
             let seconds = parseFloat64(value :value)
             interval = TimeInterval(seconds)
         }
-        return Date(timeInterval: interval, since: TimestampConstants.referenceDate)
+        return Date(timeIntervalSinceReferenceDate: interval)
     }
     
     // MARK: - Interval
