@@ -215,14 +215,12 @@ struct BinaryUtils {
     }
     
     // MARK: - Date / Time
-    
+
     struct TimestampConstants {
-        static let referenceDate: Date = {
-            let components = DateComponents(year: 2000, month: 1, day: 1)
-            var calendar = Calendar(identifier: .gregorian)
-            calendar.timeZone = TimeZone(abbreviation: "UTC")!
-            return calendar.date(from: components)!
-        }()
+      // Foundation referenceDate is 00:00:00 UTC on 1 January 2001,
+      // the reference date we want is 00:00:00 UTC on 1 January 2000
+      static let offsetTimeIntervalSinceFoundationReferenceDate: TimeInterval = -31_622_400
+      static let referenceDate = Date(timeIntervalSinceReferenceDate: offsetTimeIntervalSinceFoundationReferenceDate)
     }
     
     static func parseTimetamp(value: UnsafeMutablePointer<Int8>, isInteger: Bool) -> Date {
