@@ -5,9 +5,10 @@ matrix:
       osx_image: xcode8.3
 
 before_install:
-  - brew tap vapor/tap;
-  - brew update;
-  - brew install vapor;
+  - gem install xcpretty
+  - brew tap vapor/tap
+  - brew update
+  - brew install vapor
 
 install:
   - rm -rf /usr/local/var/postgres
@@ -20,7 +21,7 @@ script:
   # run unit tests
   - swift build --configuration release
   - swift package generate-xcodeproj
-  - xcodebuild -scheme PostgreSQL -enableCodeCoverage YES test  # instead of swift test
+  - xcodebuild -scheme PostgreSQL -enableCodeCoverage YES test | xcpretty  # instead of swift test
 
 
 after_success:
