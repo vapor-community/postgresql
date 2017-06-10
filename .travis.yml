@@ -18,9 +18,10 @@ install:
 
 script:
   # run unit tests
-  - swift build -Xswiftc -DNO_ANIMATION
-  - swift build --configuration release -Xswiftc -DNO_ANIMATION
-  - swift test
+  - swift build --configuration release
+  - swift package generate-xcodeproj
+  - xcodebuild -scheme PostgreSQL -enableCodeCoverage YES test  # instead of swift test
+
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
