@@ -21,3 +21,6 @@ script:
   - swift build -Xswiftc -DNO_ANIMATION
   - swift build --configuration release -Xswiftc -DNO_ANIMATION
   - swift test
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
