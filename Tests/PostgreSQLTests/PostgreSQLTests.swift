@@ -13,6 +13,7 @@ class PostgreSQLTests: XCTestCase {
         ("testInts", testInts),
         ("testFloats", testFloats),
         ("testNumeric", testNumeric),
+        ("testNumericAverage", testNumericAverage),
         ("testJSON", testJSON),
         ("testIntervals", testIntervals),
         ("testPoints", testPoints),
