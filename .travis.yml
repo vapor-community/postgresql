@@ -1,18 +1,28 @@
-language: ruby
+language: generic
 matrix:
   include:
-    - os: linux
-      dist: trusty
-      sudo: required
-      addons:
-        postgresql: 9.5
     - os: osx
       osx_image: xcode8.3
+
+before_install:
+  - gem install xcpretty
+  - brew tap vapor/tap
+  - brew update
+  - brew install vapor
+
 install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then rm -rf /usr/local/var/postgres && initdb /usr/local/var/postgres -E utf8; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pg_ctl -D /usr/local/var/postgres start && sleep 3 || true; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sudo -u travis createuser -s -p 5432 postgres; fi
+  - rm -rf /usr/local/var/postgres
+  - initdb /usr/local/var/postgres -E utf8
+  - pg_ctl -D /usr/local/var/postgres start && sleep 3 || true
+  - sudo -u travis createuser -s -p 5432 postgres
   - psql -U postgres -c 'create database test;'
+
 script:
-  - eval "$(curl -sL https://swift.vapor.sh/ci-3.1)"
-  - eval "$(curl -sL https://swift.vapor.sh/codecov)"
+  # run unit tests
+  - swift build --configuration release
+  - swift package generate-xcodeproj
+  - xcodebuild -scheme PostgreSQL -enableCodeCoverage YES test | xcpretty  # instead of swift test
+
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

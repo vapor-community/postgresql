@@ -1,8 +1,14 @@
 dependencies:
+  override:
+    - eval "$(curl -sL https://apt.vapor.sh)"
+    - sudo apt-get install vapor
+    - sudo chmod -R a+rx /usr/
+
   pre:
-    - sudo -u postgres createuser user_testing
-    - createdb test
+    - sudo -u postgres createdb test
 
 test:
   override:
-    - eval "$(curl -sL https://swift.vapor.sh/ci-3.1)"
+    - swift build
+    - swift build -c release
+    - swift test
