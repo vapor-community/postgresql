@@ -194,6 +194,8 @@ class BinaryUtilsTests: XCTestCase {
             ("0001000000000000007b", "123"),
             ("0002ffff0000000526941388", "0.98765"),
             ("0002ffff4000000526941388", "-0.98765"),
+            ("0002ffff0000000426941388", "0.9877"),
+            ("0002ffff0000000026941388", "1"),
         ]
         
         for (hexString, numericString) in numericTests {
