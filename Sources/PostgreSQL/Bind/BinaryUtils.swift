@@ -167,15 +167,21 @@ struct BinaryUtils {
             return "0"
         }
         
+        let weight = Int(parseInt16(value: value.advanced(by: 2)))
         let dscale = Int(parseInt16(value: value.advanced(by: 6)))
+        var digitIndex = 0
         
-        // Add all digits to a string
         var number: String = ""
-        for i in 0..<numberOfDigits {
-            let int16 = parseInt16(value: value.advanced(by: 8 + i * 2))
+        func addDigit(atIndex index: Int) {
+            let int16: Int16
+            if index >= 0 && index < numberOfDigits {
+                int16 = parseInt16(value: value.advanced(by: 8 + index * 2))
+            } else {
+                int16 = 0
+            }
             let stringDigits = String(int16)
             
-            if i == 0 {
+            if index == 0 {
                 number += stringDigits
             }
             else {
@@ -185,25 +191,29 @@ struct BinaryUtils {
             }
         }
         
+        // Add all digits before the decimal point
+        if weight < 0 {
+            digitIndex = weight + 1
+            number += "0"
+        } else {
+            while digitIndex <= weight {
+                addDigit(atIndex: digitIndex)
+                digitIndex += 1
+            }
+        }
+        
+        // Add digits after decimal point
         if dscale > 0 {
-            // Make sure we have enough decimal digits by pre-padding with zeros
-            if number.characters.count < dscale {
-                number = String(repeating: "0", count: dscale - number.characters.count) + number
-            }
-            else {
-                // Remove any trailing zeros
-                while number.hasSuffix("0") {
-                    number.remove(at: number.index(number.endIndex, offsetBy: -1))
-                }
+            number += "."
+            let decimalIndex = number.endIndex
+            
+            for _ in stride(from: 0, to: dscale, by: 4) {
+                addDigit(atIndex: digitIndex)
+                digitIndex += 1
             }
             
-            // Insert decimal point
-            number.insert(".", at: number.index(number.endIndex, offsetBy: -dscale))
-            
-            // If we have at least a zero before the decimal point
-            if dscale == number.characters.count - 1 {
-                number = "0"+number
-            }
+            let endIndex = number.index(decimalIndex, offsetBy: dscale + 1)
+            number = number.substring(to: endIndex)
         }
         
         // Make number negative if necessary
