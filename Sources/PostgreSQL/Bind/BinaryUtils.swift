@@ -145,73 +145,177 @@ struct BinaryUtils {
         return Float64(bigEndian: convert(value))
     }
     
-    // MARK: - Numberic
+    // MARK: - Numeric
     
-    struct NumericConstants {
-        static let signNaN: Int16 = -16384
-        static let signNegative: Int16 = 16384
-        static let decDigits = 4
-    }
-    
-    static func parseNumeric(value: UnsafeMutablePointer<Int8>) -> String {
-        let sign = parseInt16(value: value.advanced(by: 4))
+    struct Numeric {
+        private static let signNaN: Int16 = -16384
+        private static let signNegative: Int16 = 16384
+        private static let decDigits = 4
+        private static let NBASE: Int16 = 10000
+        private static let halfNBASE: Int16 = 5000
+        private static let roundPowers: [Int16] = [0, 1000, 100, 10]
         
-        // Check for NaN
-        guard sign != NumericConstants.signNaN else {
-            return "NaN"
+        var sign: Int16
+        var weight: Int
+        var dscale: Int
+        var numberOfDigits: Int
+        var digits: [Int16]
+        
+        init(value: UnsafeMutablePointer<Int8>) {
+            sign = BinaryUtils.parseInt16(value: value.advanced(by: 4))
+            weight = Int(BinaryUtils.parseInt16(value: value.advanced(by: 2)))
+            
+            var dscale = Int(BinaryUtils.parseInt16(value: value.advanced(by: 6)))
+            if dscale < 0 {
+                dscale = 0
+            }
+            self.dscale = dscale
+            
+            numberOfDigits = Int(BinaryUtils.parseInt16(value: value))
+            digits = (0..<numberOfDigits).map { BinaryUtils.parseInt16(value: value.advanced(by: 8 + $0 * 2)) }
         }
         
-        // Check that we actually have some digits
-        let numberOfDigits = Int(parseInt16(value: value))
-        guard numberOfDigits > 0 else {
-            return "0"
-        }
-        
-        let dscale = Int(parseInt16(value: value.advanced(by: 6)))
-        
-        // Add all digits to a string
-        var number: String = ""
-        for i in 0..<numberOfDigits {
-            let int16 = parseInt16(value: value.advanced(by: 8 + i * 2))
+        private func getDigit(atIndex index: Int) -> String {
+            let int16: Int16
+            if index >= 0 && index < numberOfDigits {
+                int16 = digits[index]
+            } else {
+                int16 = 0
+            }
             let stringDigits = String(int16)
             
-            if i == 0 {
-                number += stringDigits
+            guard index != 0 else {
+                return stringDigits
             }
-            else {
-                // The number of digits should be 4 (DEC_DIGITS),
-                // so pad if necessary.
-                number += String(repeating: "0", count: 4 - stringDigits.characters.count) + stringDigits
-            }
+            
+            // The number of digits should be 4 (DEC_DIGITS),
+            // so pad if necessary.
+            return String(repeating: "0", count: Numeric.decDigits - stringDigits.characters.count) + stringDigits
         }
         
-        if dscale > 0 {
-            // Make sure we have enough decimal digits by pre-padding with zeros
-            if number.characters.count < dscale {
-                number = String(repeating: "0", count: dscale - number.characters.count) + number
+        /// Function for rounding numeric values.
+        /// The code is based on https://github.com/postgres/postgres/blob/3a0d473192b2045cbaf997df8437e7762d34f3ba/src/backend/utils/adt/numeric.c#L8594
+        mutating func roundIfNeeded() {
+            // Decimal digits wanted
+            var totalDigits = (weight + 1) * Numeric.decDigits + dscale
+            
+            // If less than 0, result should be 0
+            guard totalDigits >= 0 else {
+                digits = []
+                weight = 0
+                sign = 0
+                return
             }
-            else {
-                // Remove any trailing zeros
-                while number.hasSuffix("0") {
-                    number.remove(at: number.index(number.endIndex, offsetBy: -1))
+            
+            // NBASE digits wanted
+            var nbaseDigits = (totalDigits + Numeric.decDigits - 1) / Numeric.decDigits
+            
+            // 0, or number of decimal digits to keep in last NBASE digit
+            totalDigits = totalDigits % Numeric.decDigits
+            
+            guard nbaseDigits < numberOfDigits || (nbaseDigits == numberOfDigits && totalDigits > 0) else {
+                return
+            }
+            
+            numberOfDigits = nbaseDigits
+            
+            var carry: Int16
+            if totalDigits == 0 {
+                carry = digits[0] >= Numeric.halfNBASE ? 1 : 0
+            } else {
+                nbaseDigits -= 1
+                
+                // Must round within last NBASE digit
+                var pow10 = Numeric.roundPowers[totalDigits]
+                let extra = digits[nbaseDigits] % pow10
+                digits[nbaseDigits] = digits[nbaseDigits] - extra
+                
+                carry = 0
+                if extra >= pow10 / 2 {
+                    pow10 += digits[nbaseDigits]
+                    if pow10 >= Numeric.NBASE {
+                        pow10 -= Numeric.NBASE
+                        carry = 1
+                    }
+                    digits[nbaseDigits] = pow10
                 }
             }
             
-            // Insert decimal point
-            number.insert(".", at: number.index(number.endIndex, offsetBy: -dscale))
-            
-            // If we have at least a zero before the decimal point
-            if dscale == number.characters.count - 1 {
-                number = "0"+number
+            // Propagate carry if needed
+            while carry > 0 {
+                nbaseDigits -= 1
+                if nbaseDigits < 0 {
+                    digits.insert(0, at: 0)
+                    nbaseDigits = 0
+                    
+                    numberOfDigits += 1
+                    weight += 1
+                }
+                
+                carry += digits[nbaseDigits]
+                
+                if carry >= Numeric.NBASE {
+                    digits[nbaseDigits] = carry - Numeric.NBASE
+                    carry = 1
+                } else {
+                    digits[nbaseDigits] = carry
+                    carry = 0
+                }
             }
         }
         
-        // Make number negative if necessary
-        if sign == NumericConstants.signNegative {
-            number = "-"+number
+        var string: String {
+            // Check for NaN
+            guard sign != Numeric.signNaN else {
+                return "NaN"
+            }
+            
+            guard !digits.isEmpty else {
+                return "0"
+            }
+            
+            var digitIndex = 0
+            var string: String = ""
+            
+            // Make number negative if necessary
+            if sign == Numeric.signNegative {
+                string += "-"
+            }
+            
+            // Add all digits before decimal point
+            if weight < 0 {
+                digitIndex = weight + 1
+                string += "0"
+            } else {
+                while digitIndex <= weight {
+                    string += getDigit(atIndex: digitIndex)
+                    digitIndex += 1
+                }
+            }
+            
+            guard dscale > 0 else {
+                return string
+            }
+            
+            // Add digits after decimal point
+            string += "."
+            let decimalIndex = string.endIndex
+            
+            for _ in stride(from: 0, to: dscale, by: Numeric.decDigits) {
+                string += getDigit(atIndex: digitIndex)
+                digitIndex += 1
+            }
+            
+            let endIndex = string.index(decimalIndex, offsetBy: dscale + 1)
+            string = string.substring(to: endIndex)
+            return string
         }
-        
-        return number
+    }
+    
+    static func parseNumeric(value: UnsafeMutablePointer<Int8>) -> String {
+        var numeric = Numeric(value: value)
+        numeric.roundIfNeeded()
+        return numeric.string
     }
     
     // MARK: - Date / Time

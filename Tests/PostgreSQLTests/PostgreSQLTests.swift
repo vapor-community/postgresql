@@ -13,6 +13,7 @@ class PostgreSQLTests: XCTestCase {
         ("testInts", testInts),
         ("testFloats", testFloats),
         ("testNumeric", testNumeric),
+        ("testNumericAverage", testNumericAverage),
         ("testJSON", testJSON),
         ("testIntervals", testIntervals),
         ("testPoints", testPoints),
@@ -302,6 +303,54 @@ class PostgreSQLTests: XCTestCase {
             XCTAssertNotNil(numeric?.string)
             XCTAssertEqual(numeric!.string!, rows[i])
         }
+    }
+
+    func testNumericAverage() throws {
+        let conn = try postgreSQL.makeConnection()
+
+        try conn.execute("DROP TABLE IF EXISTS jobs")
+        try conn.execute("CREATE TABLE jobs (id SERIAL PRIMARY KEY NOT NULL, title VARCHAR(255) NOT NULL, pay INT8 NOT NULL)")
+
+        try conn.execute("INSERT INTO jobs (title, pay) VALUES ($1, $2)", ["A", 100])
+        try conn.execute("INSERT INTO jobs (title, pay) VALUES ($1, $2)", ["A", 200])
+        try conn.execute("INSERT INTO jobs (title, pay) VALUES ($1, $2)", ["A", 300])
+        try conn.execute("INSERT INTO jobs (title, pay) VALUES ($1, $2)", ["A", 400])
+        try conn.execute("INSERT INTO jobs (title, pay) VALUES ($1, $2)", ["A", 500])
+        try conn.execute("INSERT INTO jobs (title, pay) VALUES ($1, $2)", ["B", 100])
+        try conn.execute("INSERT INTO jobs (title, pay) VALUES ($1, $2)", ["B", 200])
+        try conn.execute("INSERT INTO jobs (title, pay) VALUES ($1, $2)", ["B", 900])
+        try conn.execute("INSERT INTO jobs (title, pay) VALUES ($1, $2)", ["C", 100])
+        try conn.execute("INSERT INTO jobs (title, pay) VALUES ($1, $2)", ["C", 1100])
+        try conn.execute("INSERT INTO jobs (title, pay) VALUES ($1, $2)", ["D", 100])
+        try conn.execute("INSERT INTO jobs (title, pay) VALUES ($1, $2)", ["E", 500])
+
+        defer {
+            _ = try? conn.execute("DROP TABLE IF EXISTS jobs")
+        }
+
+        let result = try conn.execute("select title, avg(pay) as average, count(*) as cnt from jobs group by title order by average desc")
+
+        guard let array = result.array else {
+            XCTFail("Result was not an array")
+            return
+        }
+
+        XCTAssertEqual(5, array.count)
+        XCTAssertEqual("C", array[0]["title"]?.string)
+        XCTAssertEqual("E", array[1]["title"]?.string)
+        XCTAssertEqual("B", array[2]["title"]?.string)
+        XCTAssertEqual("A", array[3]["title"]?.string)
+        XCTAssertEqual("D", array[4]["title"]?.string)
+        XCTAssertEqual(2, array[0]["cnt"]?.int)
+        XCTAssertEqual(1, array[1]["cnt"]?.int)
+        XCTAssertEqual(3, array[2]["cnt"]?.int)
+        XCTAssertEqual(5, array[3]["cnt"]?.int)
+        XCTAssertEqual(1, array[4]["cnt"]?.int)
+        XCTAssertEqual(600, array[0]["average"]?.double)
+        XCTAssertEqual(500, array[1]["average"]?.double)
+        XCTAssertEqual(400, array[2]["average"]?.double)
+        XCTAssertEqual(300, array[3]["average"]?.double)
+        XCTAssertEqual(100, array[4]["average"]?.double)
     }
 
     func testJSON() throws {
