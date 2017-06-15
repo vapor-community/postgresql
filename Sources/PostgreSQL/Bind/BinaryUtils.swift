@@ -193,6 +193,8 @@ struct BinaryUtils {
             return String(repeating: "0", count: Numeric.decDigits - stringDigits.characters.count) + stringDigits
         }
         
+        /// Function for rounding numeric values.
+        /// The code is based on https://github.com/postgres/postgres/blob/3a0d473192b2045cbaf997df8437e7762d34f3ba/src/backend/utils/adt/numeric.c#L8594
         mutating func roundIfNeeded() {
             // Decimal digits wanted
             var totalDigits = (weight + 1) * Numeric.decDigits + dscale
