@@ -26,7 +26,7 @@ extension Bind {
             return Bind.parse(type: supportedArrayType, configuration: configuration, value: value, length: length)
             
         case .unsupported(let oid):
-            print("Unsupported Oid type for PostgreSQL binding (\(oid)).")
+            // Unsupported Oid type for PostgreSQL binding.
             
             // Fallback to simply passing on the bytes
             let bytes = BinaryUtils.parseBytes(value: value, length: length)
