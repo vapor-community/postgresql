@@ -306,10 +306,14 @@ struct BinaryUtils {
                 digitIndex += 1
             }
             
-            let endIndex = string.index(decimalIndex, offsetBy: dscale + 1)
-            #if swift(>=4.0)
+            #if swift(>=3.2)
+                let maxOffset = string.distance(from: decimalIndex, to: string.endIndex)
+                let offset = min(maxOffset, dscale)
+                let endIndex = string.index(decimalIndex, offsetBy: offset)
+                
                 return String(string[..<endIndex])
             #else
+                let endIndex = string.index(decimalIndex, offsetBy: dscale + 1)
                 return string.substring(to: endIndex)
             #endif
         }
