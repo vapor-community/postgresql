@@ -1,7 +1,7 @@
 # PostgreSQL for Swift
 
 [![Swift](http://img.shields.io/badge/swift-3.1-brightgreen.svg)](https://swift.org)
-[![Build Status](https://travis-ci.org/vapor-community/postgresql.svg?branch=execute-w-values-bug)](https://travis-ci.org/vapor-community/postgresql)
+[![Build Status](https://travis-ci.org/vapor-community/postgresql.svg?branch=master)](https://travis-ci.org/vapor-community/postgresql)
 
 
 # Using PostgreSQL
