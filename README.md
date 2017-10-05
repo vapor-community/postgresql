@@ -6,6 +6,11 @@
 
 # PostgreSQL for Swift
 
+## Prerequisites
+
+The PostgreSQL C driver must be installed in order to use this package.  
+Follow the [README of the cpostgresql repo](https://github.com/vapor-community/cpostgresql/blob/master/README.md) to get started.
+
 ## Using PostgreSQL
 
 This section outlines how to import the PostgreSQL package both with or without a Vapor project.
