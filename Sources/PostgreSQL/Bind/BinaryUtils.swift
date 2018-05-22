@@ -175,7 +175,7 @@ struct BinaryUtils {
             digits = (0..<numberOfDigits).map { BinaryUtils.parseInt16(value: value.advanced(by: 8 + $0 * 2)) }
         }
         
-        private func getDigit(atIndex index: Int) -> String {
+        private func getDigit(atIndex index: Int, fractional: Bool = false) -> String {
             let int16: Int16
             if index >= 0 && index < numberOfDigits {
                 int16 = digits[index]
@@ -184,7 +184,7 @@ struct BinaryUtils {
             }
             let stringDigits = String(int16)
             
-            guard index != 0 else {
+            if (index == 0 && !fractional) {
                 return stringDigits
             }
             
@@ -302,7 +302,7 @@ struct BinaryUtils {
             let decimalIndex = string.endIndex
             
             for _ in stride(from: 0, to: dscale, by: Numeric.decDigits) {
-                string += getDigit(atIndex: digitIndex)
+                string += getDigit(atIndex: digitIndex, fractional: true)
                 digitIndex += 1
             }
             
