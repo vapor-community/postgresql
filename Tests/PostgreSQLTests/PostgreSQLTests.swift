@@ -281,6 +281,7 @@ class PostgreSQLTests: XCTestCase {
         let rows: [String] = [
             "0",
             "0.1",
+            "10.08",
             "-0.123",
             "123",
             "456.7891412341",
