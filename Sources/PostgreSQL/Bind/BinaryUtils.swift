@@ -4,12 +4,12 @@ import Core
 extension UInt8 {
     var lowercaseHexPair: String {
         let hexString = String(self, radix: 16, uppercase: false)
-        return String(repeating: "0", count: 2 - hexString.characters.count) + hexString
+        return String(repeating: "0", count: 2 - hexString.count) + hexString
     }
     
     var lowercaseBinaryString: String {
         let bitString = String(self, radix: 2, uppercase: false)
-        return String(repeating: "0", count: 8 - bitString.characters.count) + bitString
+        return String(repeating: "0", count: 8 - bitString.count) + bitString
     }
 }
 
@@ -190,7 +190,7 @@ struct BinaryUtils {
             
             // The number of digits should be 4 (DEC_DIGITS),
             // so pad if necessary.
-            return String(repeating: "0", count: Numeric.decDigits - stringDigits.characters.count) + stringDigits
+            return String(repeating: "0", count: Numeric.decDigits - stringDigits.count) + stringDigits
         }
         
         /// Function for rounding numeric values.

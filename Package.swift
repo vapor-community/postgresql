@@ -1,4 +1,4 @@
-// swift-tools-version:4.0
+// swift-tools-version:5.2
 import PackageDescription
 
 let package = Package(
@@ -8,13 +8,13 @@ let package = Package(
     ],
     dependencies: [
         // Module map for `libpq`
-        .package(url: "https://github.com/vapor-community/cpostgresql.git", .upToNextMajor(from: "2.1.0")),
+        .package(name: "CPostgreSQL", url: "https://github.com/vapor-community/cpostgresql.git", from: "2.1.0"),
         
         // Data structure for converting between multiple representations
-        .package(url: "https://github.com/vapor/node.git", .upToNextMajor(from: "2.1.0")),
+        .package(name: "Node", url: "https://github.com/vapor/node.git", from: "2.1.0"),
 
         // Core extensions, type-aliases, and functions that facilitate common tasks
-        .package(url: "https://github.com/vapor/core.git", .upToNextMajor(from: "2.1.2"))
+        .package(name: "Core", url: "https://github.com/vapor/core.git", from: "2.1.2"),
     ],
     targets: [
         .target(name: "PostgreSQL", dependencies: ["CPostgreSQL", "Node", "Core"]),

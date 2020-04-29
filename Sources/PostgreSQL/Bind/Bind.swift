@@ -14,7 +14,7 @@ public final class Bind {
 
         deinit {
             if ownsMemory {
-                bytes.deallocate(capacity: length)
+                bytes.deallocate()
             }
         }
     }
