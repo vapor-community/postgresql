@@ -14,7 +14,11 @@ public final class Bind {
 
         deinit {
             if ownsMemory {
+                #if swift(>=5.0)
                 bytes.deallocate()
+                #else
+                bytes.deallocate(capacity: length)
+                #endif
             }
         }
     }
